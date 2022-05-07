@@ -1,0 +1,8 @@
+[package]
+name = "mpc_keygroup_creator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+music-note = "0.3.0"
+regex = "1"
