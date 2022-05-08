@@ -1,18 +1,13 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
-use export::make_program;
+use mpc_keygroup_creator::export::make_program;
 use std::env;
 use std::fs::File;
 use std::path::Path;
 use xmltree::EmitterConfig;
 
-use crate::keygroup::make_keygroups;
-
-mod export;
-mod keygroup;
-mod parse;
-mod range;
+use mpc_keygroup_creator::keygroup::make_keygroups;
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {

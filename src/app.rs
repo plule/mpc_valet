@@ -1,24 +1,20 @@
-pub struct TemplateApp {
-    // Example stuff:
-    label: String,
+use crate::keygroup::{make_keygroups, KeyGroup};
 
-    // this how you opt-out of serialization of a member
-    value: f32,
+pub struct TemplateApp {
+    keygroups: Vec<KeyGroup>,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.7,
+            keygroups: Vec::new(),
         }
     }
 }
 
 impl TemplateApp {
     /// Called once before the first frame.
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         // This is also where you can customized the look at feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
         Default::default()
@@ -29,67 +25,80 @@ impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let Self { label, value } = self;
-
-        // Examples of how to create different panels and windows.
-        // Pick whichever suits you.
-        // Tip: a good default choice is to just keep the `CentralPanel`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
-
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-            egui::menu::bar(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("Quit").clicked() {
-                        frame.quit();
-                    }
-                });
-            });
-        });
-
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
-            ui.heading("Side Panel");
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(label);
-            });
-
-            ui.add(egui::Slider::new(value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                *value += 1.0;
-            }
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                ui.horizontal(|ui| {
-                    ui.spacing_mut().item_spacing.x = 0.0;
-                    ui.label("powered by ");
-                    ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-                    ui.label(" and ");
-                    ui.hyperlink_to("eframe", "https://github.com/emilk/egui/tree/master/eframe");
-                });
-            });
-        });
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-
             ui.heading("eframe template");
-            ui.hyperlink("https://github.com/emilk/mpc_keygroup_creator");
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/mpc_keygroup_creator/blob/master/",
-                "Source code."
-            ));
             egui::warn_if_debug_build(ui);
+
+            if self.keygroups.is_empty() {
+                ui.label("Drag-and-drop files onto the window!");
+            } else {
+                for keygroup in &self.keygroups {
+                    ui.label(format!(
+                        "{}: {}{} ({}{}-{}{})",
+                        keygroup.file,
+                        keygroup.root.pitch(),
+                        keygroup.root.octave(),
+                        keygroup.range.low.pitch(),
+                        keygroup.range.low.octave(),
+                        keygroup.range.high.pitch(),
+                        keygroup.range.high.octave(),
+                    ));
+                }
+            }
         });
 
-        if false {
-            egui::Window::new("Window").show(ctx, |ui| {
-                ui.label("Windows can be moved by dragging them.");
-                ui.label("They are automatically sized based on contents.");
-                ui.label("You can turn on resizing and scrolling if you like.");
-                ui.label("You would normally chose either panels OR windows.");
-            });
+        preview_files_being_dropped(ctx);
+
+        // Collect dropped files:
+        if !ctx.input().raw.dropped_files.is_empty() {
+            let filenames: Vec<String> = ctx
+                .input()
+                .raw
+                .dropped_files
+                .iter()
+                .map(|drop| {
+                    drop.path
+                        .as_ref()
+                        .unwrap()
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string()
+                })
+                .collect();
+
+            self.keygroups = make_keygroups(filenames);
         }
+    }
+}
+
+fn preview_files_being_dropped(ctx: &egui::Context) {
+    use egui::*;
+
+    if !ctx.input().raw.hovered_files.is_empty() {
+        let mut text = "Dropping files:\n".to_owned();
+        for file in &ctx.input().raw.hovered_files {
+            if let Some(path) = &file.path {
+                text += &format!("\n{}", path.display());
+            } else if !file.mime.is_empty() {
+                text += &format!("\n{}", file.mime);
+            } else {
+                text += "\n???";
+            }
+        }
+
+        let painter =
+            ctx.layer_painter(LayerId::new(Order::Foreground, Id::new("file_drop_target")));
+
+        let screen_rect = ctx.input().screen_rect();
+        painter.rect_filled(screen_rect, 0.0, Color32::from_black_alpha(192));
+        painter.text(
+            screen_rect.center(),
+            Align2::CENTER_CENTER,
+            text,
+            TextStyle::Heading.resolve(&ctx.style()),
+            Color32::WHITE,
+        );
     }
 }
