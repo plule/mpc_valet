@@ -1,3 +1,5 @@
+use egui_extras::{Size, TableBuilder};
+
 use crate::keygroup::{make_keygroups, KeyGroup};
 
 pub struct TemplateApp {
@@ -32,18 +34,56 @@ impl eframe::App for TemplateApp {
             if self.keygroups.is_empty() {
                 ui.label("Drag-and-drop files onto the window!");
             } else {
-                for keygroup in &self.keygroups {
-                    ui.label(format!(
-                        "{}: {}{} ({}{}-{}{})",
-                        keygroup.file,
-                        keygroup.root.pitch(),
-                        keygroup.root.octave(),
-                        keygroup.range.low.pitch(),
-                        keygroup.range.low.octave(),
-                        keygroup.range.high.pitch(),
-                        keygroup.range.high.octave(),
-                    ));
-                }
+                TableBuilder::new(ui)
+                    .striped(true)
+                    .cell_layout(
+                        egui::Layout::left_to_right().with_cross_align(egui::Align::Center),
+                    )
+                    .columns(Size::initial(120.0), 4)
+                    .header(20.0, |mut header| {
+                        header.col(|ui| {
+                            ui.heading("Sample");
+                        });
+                        header.col(|ui| {
+                            ui.heading("Root note");
+                        });
+                        header.col(|ui| {
+                            ui.heading("Low note");
+                        });
+                        header.col(|ui| {
+                            ui.heading("High note");
+                        });
+                    })
+                    .body(|mut body| {
+                        for keygroup in &self.keygroups {
+                            body.row(20.0, |mut row| {
+                                row.col(|ui| {
+                                    ui.label(keygroup.file.clone());
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}{}",
+                                        keygroup.root.pitch(),
+                                        keygroup.root.octave(),
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}{}",
+                                        keygroup.range.low.pitch(),
+                                        keygroup.range.low.octave(),
+                                    ));
+                                });
+                                row.col(|ui| {
+                                    ui.label(format!(
+                                        "{}{}",
+                                        keygroup.range.high.pitch(),
+                                        keygroup.range.high.octave(),
+                                    ));
+                                });
+                            });
+                        }
+                    });
             }
         });
 
