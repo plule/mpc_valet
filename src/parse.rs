@@ -29,11 +29,11 @@ impl Ord for NoteFile {
     }
 }
 
-pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<NoteFile> {
+pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<MidiNote> {
     let letter_note_re =
         Regex::new(r"(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|[0-9])").unwrap();
 
-    let letter_note_results: Vec<NoteFile> = filenames
+    let midi_notes: Vec<MidiNote> = filenames
         .iter()
         .filter_map(|filename| match letter_note_re.captures(filename) {
             Some(capture) => {
@@ -62,15 +62,14 @@ pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<NoteFile> {
                 let octave = octave.parse::<i8>().unwrap();
                 let octave = Octave::new_unchecked(octave);
 
-                let midi_note = MidiNote::new(pitch, octave);
-                Some(NoteFile::new(filename.to_string(), midi_note))
+                Some(MidiNote::new(pitch, octave))
             }
             None => None,
         })
         .collect();
 
-    if letter_note_results.len() == filenames.len() {
-        return letter_note_results;
+    if midi_notes.len() == filenames.len() {
+        return midi_notes;
     }
     todo!()
 }
@@ -79,29 +78,15 @@ pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<NoteFile> {
 mod tests {
     use super::*;
     use music_note::midi;
+    use rstest::rstest;
 
-    #[test]
-    fn parse_roots() {
-        let filenames = vec![
-            "MELCEL-A2.WAV",
-            "MELCEL-A3.WAV",
-            "MELCEL-A4.WAV",
-            "MELCEL-D3.WAV",
-            "MELCEL-D4.WAV",
-            "MELCEL-D5.WAV",
-        ];
-
-        let notefiles = find_samples_roots(filenames);
-        assert!(
-            notefiles
-                == vec![
-                    NoteFile::new("MELCEL-A2.WAV".to_string(), midi!(A, 2)),
-                    NoteFile::new("MELCEL-A3.WAV".to_string(), midi!(A, 3)),
-                    NoteFile::new("MELCEL-A4.WAV".to_string(), midi!(A, 4)),
-                    NoteFile::new("MELCEL-D3.WAV".to_string(), midi!(D, 3)),
-                    NoteFile::new("MELCEL-D4.WAV".to_string(), midi!(D, 4)),
-                    NoteFile::new("MELCEL-D5.WAV".to_string(), midi!(D, 5)),
-                ]
-        );
+    #[rstest]
+    #[case(
+        vec!["MELCEL-A2.WAV", "MELCEL-A3.WAV", "MELCEL-A4.WAV", "MELCEL-D3.WAV", "MELCEL-D4.WAV", "MELCEL-D5.WAV"],
+        vec![midi!(A, 2), midi!(A, 3), midi!(A, 4), midi!(D, 3), midi!(D, 4), midi!(D, 5)],
+    )]
+    fn parse_roots(#[case] input: Vec<&str>, #[case] expected: Vec<MidiNote>) {
+        let midi_notes = find_samples_roots(input);
+        assert_eq!(midi_notes, expected);
     }
 }

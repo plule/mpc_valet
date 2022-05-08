@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 music-note = "0.3.0"
 regex = "1"
+
+[dev-dependencies]
+rstest = "0.12.0"
