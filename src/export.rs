@@ -1,20 +1,7 @@
 use music_note::midi::MidiNote;
 use xmltree::{Element, XMLNode};
 
-use crate::range::Range;
-
-#[derive(Debug)]
-pub struct KeyGroup {
-    range: Range,
-    root: MidiNote,
-    file: String,
-}
-
-impl KeyGroup {
-    pub fn new(range: Range, root: MidiNote, file: String) -> Self {
-        Self { range, root, file }
-    }
-}
+use crate::{keygroup::KeyGroup, range::Range};
 
 trait SetChildText {
     fn set_child_text(&mut self, child: &str, text: String);

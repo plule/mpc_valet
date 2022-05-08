@@ -1,26 +1,15 @@
-use export::{make_program, KeyGroup};
-use music_note::midi::MidiNote;
-use parse::find_samples_roots;
-use range::build_ranges;
+use export::make_program;
 use std::env;
 use std::fs::File;
 use std::path::Path;
 use xmltree::EmitterConfig;
 
+use crate::keygroup::make_keygroups;
+
 mod export;
+mod keygroup;
 mod parse;
 mod range;
-
-struct Sample {
-    file: String,
-    root: MidiNote,
-}
-
-impl Sample {
-    fn new(file: String, root: MidiNote) -> Self {
-        Self { file, root }
-    }
-}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -37,23 +26,7 @@ fn main() {
         .map(|p| p.unwrap().to_str().unwrap().to_string())
         .collect();
 
-    let roots = find_samples_roots(&filenames);
-
-    let mut samples: Vec<Sample> = filenames
-        .into_iter()
-        .zip(roots.into_iter())
-        .map(|(name, root)| Sample::new(name, root))
-        .collect();
-
-    samples.sort_by_key(|s| s.root);
-
-    let ranges = build_ranges(samples.iter().map(|s| &s.root));
-
-    let keygroups = samples
-        .into_iter()
-        .zip(ranges.into_iter())
-        .map(|(sample, range)| KeyGroup::new(range, sample.root, sample.file))
-        .collect();
+    let keygroups = make_keygroups(filenames);
 
     let program = make_program(programname, keygroups);
 
