@@ -3,6 +3,7 @@ use xmltree::{Element, XMLNode};
 
 use crate::process::Range;
 
+#[derive(Debug)]
 pub struct KeyGroup {
     range: Range,
     root: MidiNote,
@@ -31,20 +32,17 @@ trait SetText {
 
 impl SetText for Element {
     fn set_text(&mut self, text: String) {
+        self.children.clear();
         self.children.push(XMLNode::Text(text));
     }
 }
 
-pub fn make_program(name: String, keygroups: Vec<KeyGroup>) -> Element {
+pub fn make_program(name: &str, keygroups: Vec<KeyGroup>) -> Element {
     let reference = include_str!("Reference.xpm");
     let mut program_root = Element::parse(reference.as_bytes()).unwrap();
-    let program = program_root
-        .get_mut_child("MPCVObject")
-        .unwrap()
-        .get_mut_child("Program")
-        .unwrap();
+    let program = program_root.get_mut_child("Program").unwrap();
 
-    program.set_child_text("ProgramName", name);
+    program.set_child_text("ProgramName", name.to_string());
     program.set_child_text("KeygroupNumKeygroups", keygroups.len().to_string());
 
     let program_keygroups = program.get_mut_child("Instruments").unwrap();
@@ -63,6 +61,7 @@ pub fn make_program(name: String, keygroups: Vec<KeyGroup>) -> Element {
             .to_str()
             .unwrap()
             .to_string();
+
         program_keygroup.set_child_text("LowNote", low_note.to_string());
         program_keygroup.set_child_text("HighNote", high_note.to_string());
         program_keygroup
@@ -78,6 +77,10 @@ pub fn make_program(name: String, keygroups: Vec<KeyGroup>) -> Element {
         program_layer.set_child_text("RootNote", root_note.to_string());
         program_layer.set_child_text("SampleName", sample_name);
         program_layer.set_child_text("SampleFile", sample_file);
+
+        program_keygroups
+            .children
+            .push(XMLNode::Element(program_keygroup));
     }
 
     program_root
@@ -87,9 +90,10 @@ pub fn make_program(name: String, keygroups: Vec<KeyGroup>) -> Element {
 mod tests {
     pub use super::*;
 
+    #[test]
     fn make_program_test() {
         let program = make_program(
-            "Hello World".to_string(),
+            "Hello World",
             vec![KeyGroup::new(
                 Range::new(MidiNote::from(0), MidiNote::from(127)),
                 MidiNote::from(47),
@@ -99,8 +103,6 @@ mod tests {
 
         assert_eq!(
             program
-                .get_child("MPCVObject")
-                .unwrap()
                 .get_child("Program")
                 .unwrap()
                 .get_child("ProgramName")

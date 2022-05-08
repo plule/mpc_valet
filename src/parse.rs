@@ -6,7 +6,7 @@ use music_note::{
 use regex::Regex;
 
 /// Parse a list of file names and return their midi notes.
-pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<MidiNote> {
+pub fn find_samples_roots(filenames: &Vec<String>) -> Vec<MidiNote> {
     let letter_note_re =
         Regex::new(r"(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|[0-9])").unwrap();
 
@@ -63,7 +63,8 @@ mod tests {
         vec![midi!(A, 2), midi!(A, 3), midi!(A, 4), midi!(D, 3), midi!(D, 4), midi!(D, 5)],
     )]
     fn parse_roots(#[case] input: Vec<&str>, #[case] expected: Vec<MidiNote>) {
-        let midi_notes = find_samples_roots(input);
+        let input = input.iter().map(|s| s.to_string()).collect();
+        let midi_notes = find_samples_roots(&input);
         assert_eq!(midi_notes, expected);
     }
 }
