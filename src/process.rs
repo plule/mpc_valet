@@ -12,6 +12,7 @@ impl Range {
     }
 }
 
+/// Create an appropriate set of ranges from midi notes
 pub fn build_ranges<'a, I>(notes: I) -> Vec<Range>
 where
     I: IntoIterator<Item = &'a MidiNote>,
@@ -60,6 +61,10 @@ mod tests {
     #[case(
         vec![45, 57, 69],
         vec![(0,51), (52,63), (64,127)],
+    )]
+    #[case(
+        vec![45, 46, 47, 48],
+        vec![(0,45), (46,46), (47,47), (48,127)],
     )]
     #[case(
         vec![45],
