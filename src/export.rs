@@ -74,6 +74,10 @@ pub fn make_program(name: &str, keygroups: Vec<KeyGroup>) -> Element {
 
 #[cfg(test)]
 mod tests {
+    use music_note::midi::MidiNote;
+
+    use crate::range::Range;
+
     pub use super::*;
 
     #[test]
