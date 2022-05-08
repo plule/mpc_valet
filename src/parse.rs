@@ -5,30 +5,6 @@ use music_note::{
 };
 use regex::Regex;
 
-#[derive(PartialEq, Eq, Clone, Debug)]
-pub struct NoteFile {
-    pub root: MidiNote,
-    pub filename: String,
-}
-
-impl NoteFile {
-    pub fn new(filename: String, root: MidiNote) -> Self {
-        Self { filename, root }
-    }
-}
-
-impl PartialOrd for NoteFile {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.root.partial_cmp(&other.root)
-    }
-}
-
-impl Ord for NoteFile {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.root.cmp(&other.root)
-    }
-}
-
 pub fn find_samples_roots(filenames: Vec<&str>) -> Vec<MidiNote> {
     let letter_note_re =
         Regex::new(r"(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|[0-9])").unwrap();

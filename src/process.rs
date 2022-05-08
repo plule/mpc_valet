@@ -1,19 +1,5 @@
 use music_note::{midi::MidiNote, Interval};
 
-use crate::parse::NoteFile;
-
-#[derive(PartialEq, Debug)]
-pub struct Keygroup {
-    pub note: NoteFile,
-    pub range: Range,
-}
-
-impl Keygroup {
-    pub fn new(note: NoteFile, range: Range) -> Self {
-        Self { note, range }
-    }
-}
-
 #[derive(PartialEq, Debug)]
 pub struct Range {
     pub low: MidiNote,
