@@ -1,7 +1,6 @@
-use music_note::midi::MidiNote;
 use xmltree::{Element, XMLNode};
 
-use crate::{keygroup::KeyGroup, range::Range};
+use crate::keygroup::KeyGroup;
 
 trait SetChildText {
     fn set_child_text(&mut self, child: &str, text: String);
