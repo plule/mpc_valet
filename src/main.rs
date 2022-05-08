@@ -1,7 +1,7 @@
 use export::{make_program, KeyGroup};
 use music_note::midi::MidiNote;
 use parse::find_samples_roots;
-use process::build_ranges;
+use range::build_ranges;
 use std::env;
 use std::fs::File;
 use std::path::Path;
@@ -9,7 +9,7 @@ use xmltree::EmitterConfig;
 
 mod export;
 mod parse;
-mod process;
+mod range;
 
 struct Sample {
     file: String,

@@ -1,7 +1,7 @@
 use music_note::midi::MidiNote;
 use xmltree::{Element, XMLNode};
 
-use crate::process::Range;
+use crate::range::Range;
 
 #[derive(Debug)]
 pub struct KeyGroup {
