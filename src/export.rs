@@ -6,16 +6,32 @@ use crate::process::Range;
 pub struct KeyGroup {
     range: Range,
     root: MidiNote,
-    sample: String,
+    file: String,
 }
 
 impl KeyGroup {
-    pub fn new(range: Range, root: MidiNote, sample: String) -> Self {
-        Self {
-            range,
-            root,
-            sample,
-        }
+    pub fn new(range: Range, root: MidiNote, file: String) -> Self {
+        Self { range, root, file }
+    }
+}
+
+trait SetChildText {
+    fn set_child_text(&mut self, child: &str, text: String);
+}
+
+impl SetChildText for Element {
+    fn set_child_text(&mut self, child: &str, text: String) {
+        self.get_mut_child(child).unwrap().set_text(text);
+    }
+}
+
+trait SetText {
+    fn set_text(&mut self, text: String);
+}
+
+impl SetText for Element {
+    fn set_text(&mut self, text: String) {
+        self.children.push(XMLNode::Text(text));
     }
 }
 
@@ -28,8 +44,41 @@ pub fn make_program(name: String, keygroups: Vec<KeyGroup>) -> Element {
         .get_mut_child("Program")
         .unwrap();
 
-    let program_name = program.get_mut_child("ProgramName").unwrap();
-    program_name.children.push(XMLNode::Text(name));
+    program.set_child_text("ProgramName", name);
+    program.set_child_text("KeygroupNumKeygroups", keygroups.len().to_string());
+
+    let program_keygroups = program.get_mut_child("Instruments").unwrap();
+    let reference_keygroup = program_keygroups.take_child("Instrument").unwrap();
+
+    for (i, keygroup) in keygroups.into_iter().enumerate() {
+        let mut program_keygroup = reference_keygroup.clone();
+        let keygroup_number = i + 1;
+        let low_note = (keygroup.range.low.into_byte() as u32) + 12;
+        let high_note = (keygroup.range.high.into_byte() as u32) + 12;
+        let root_note = (keygroup.root.into_byte() as u32) + 13; // off by one in the file format
+        let sample_file = keygroup.file;
+        let sample_name = std::path::Path::new(&sample_file)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        program_keygroup.set_child_text("LowNote", low_note.to_string());
+        program_keygroup.set_child_text("HighNote", high_note.to_string());
+        program_keygroup
+            .attributes
+            .insert("number".to_string(), keygroup_number.to_string());
+
+        let program_layer = program_keygroup
+            .get_mut_child("Layers")
+            .unwrap()
+            .get_mut_child("Layer")
+            .unwrap();
+
+        program_layer.set_child_text("RootNote", root_note.to_string());
+        program_layer.set_child_text("SampleName", sample_name);
+        program_layer.set_child_text("SampleFile", sample_file);
+    }
 
     program_root
 }
