@@ -29,6 +29,8 @@ rfd = "0.8.2"
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 console_error_panic_hook = "0.1.6"
 tracing-wasm = "0.2"
+js-sys = "0.3.57"
+web-sys = {version = "0.3.57", features = ["Document", "Window", "Node", "HtmlElement", "Element"]}
 
 [dev-dependencies]
 rstest = "0.12.0"

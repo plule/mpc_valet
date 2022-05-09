@@ -935,6 +935,7 @@ dependencies = [
  "egui",
  "egui_extras",
  "glob",
+ "js-sys",
  "lazy_static",
  "music-note",
  "regex",
@@ -942,6 +943,7 @@ dependencies = [
  "rstest",
  "tracing-subscriber",
  "tracing-wasm",
+ "web-sys",
  "xmltree",
 ]
 

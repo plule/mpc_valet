@@ -100,25 +100,56 @@ impl eframe::App for TemplateApp {
                     }
                 });
 
-            #[cfg(not(target_arch = "wasm32"))]
             if ui.button("Save").clicked() {
-                use rfd::FileDialog;
-                use std::fs::File;
-
-                if let Some(dest) = FileDialog::new()
-                    .set_directory(&self.sample_dir)
-                    .add_filter("MPC Program", &["xpm"])
-                    .set_file_name(format!("{}.xpm", self.program.name).as_str())
-                    .save_file()
+                let file_name = format!("{}.xpm", self.program.name);
+                #[cfg(not(target_arch = "wasm32"))]
                 {
-                    match File::create(dest) {
-                        Ok(f) => {
-                            self.program.export(f);
-                        }
-                        Err(e) => {
-                            ui.label(format!("Failed to create the program: {}", e));
+                    use rfd::FileDialog;
+                    use std::fs::File;
+
+                    if let Some(dest) = FileDialog::new()
+                        .set_directory(&self.sample_dir)
+                        .add_filter("MPC Program", &["xpm"])
+                        .set_file_name(file_name.as_str())
+                        .save_file()
+                    {
+                        match File::create(dest) {
+                            Ok(f) => {
+                                self.program.export(f);
+                            }
+                            Err(e) => {
+                                ui.label(format!("Failed to create the program: {}", e));
+                            }
                         }
                     }
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    // look mom i do the web
+                    use eframe::wasm_bindgen::JsCast;
+                    use js_sys::encode_uri_component;
+
+                    let mut file_content = Vec::<u8>::new();
+                    self.program.export(&mut file_content);
+                    let file_content = String::from_utf8(file_content).unwrap();
+                    let file_content = encode_uri_component(&file_content);
+
+                    let window = web_sys::window().unwrap();
+                    let document = window.document().unwrap();
+                    let element = document.create_element("a").unwrap();
+                    let element = element.dyn_into::<web_sys::HtmlElement>().unwrap();
+                    element
+                        .set_attribute(
+                            "href",
+                            format!("data:text/plain;charset=utf-8,{}", file_content).as_str(),
+                        )
+                        .unwrap();
+                    element
+                        .set_attribute("download", file_name.as_str())
+                        .unwrap();
+                    document.body().unwrap().append_child(&element).unwrap();
+                    element.click();
+                    document.body().unwrap().remove_child(&element).unwrap();
                 }
             }
         });
