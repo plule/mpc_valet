@@ -21,7 +21,7 @@ fn main() {
     } else {
         let native_options = eframe::NativeOptions::default();
         eframe::run_native(
-            "eframe template",
+            "MPC Keygroup Instrument Creator",
             native_options,
             Box::new(|cc| Box::new(mpc_keygroup_creator::TemplateApp::new(cc))),
         );

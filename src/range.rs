@@ -19,7 +19,7 @@ where
     cuts.extend(notes.windows(2).map(|w| {
         let root1 = *w[0];
         let root2 = *w[1];
-        assert!(root2 > root1);
+        assert!(root2 >= root1);
         let half_distance = Interval::new((root2 - root1).semitones() / 2);
         root1 + half_distance
     }));

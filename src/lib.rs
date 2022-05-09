@@ -82,6 +82,10 @@ impl KeygroupProgram {
 
         program.write_with_config(w, cfg).unwrap();
     }
+
+    pub fn can_export(&self) -> bool {
+        self.keygroups.iter().any(|kg| kg.root.is_some())
+    }
 }
 
 #[derive(Debug)]
