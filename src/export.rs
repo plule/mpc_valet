@@ -23,24 +23,30 @@ impl SetText for Element {
     }
 }
 
-pub fn make_program(name: &str, keygroups: Vec<Keygroup>) -> Element {
+pub fn make_program<'a, I>(name: &str, keygroups: I) -> Element
+where
+    I: IntoIterator<Item = &'a Keygroup>,
+{
     let reference = include_str!("Reference.xpm");
     let mut program_root = Element::parse(reference.as_bytes()).unwrap();
     let program = program_root.get_mut_child("Program").unwrap();
 
     program.set_child_text("ProgramName", name.to_string());
-    program.set_child_text("KeygroupNumKeygroups", keygroups.len().to_string());
 
     let program_keygroups = program.get_mut_child("Instruments").unwrap();
     let reference_keygroup = program_keygroups.take_child("Instrument").unwrap();
 
-    for (i, keygroup) in keygroups.into_iter().enumerate() {
+    let mut num_keygroups = 0;
+    for (sample_file, root, range) in keygroups.into_iter().filter_map(|kg| match kg.root {
+        Some(root) => Some((kg.file.to_string(), root, kg.range.clone())),
+        None => None,
+    }) {
+        num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
-        let keygroup_number = i + 1;
-        let low_note = (keygroup.range.low.into_byte() as u32) + 12;
-        let high_note = (keygroup.range.high.into_byte() as u32) + 12;
-        let root_note = (keygroup.root.unwrap().into_byte() as u32) + 13; // off by one in the file format
-        let sample_file = keygroup.file;
+        let keygroup_number = num_keygroups;
+        let low_note = (range.low.into_byte() as u32) + 12;
+        let high_note = (range.high.into_byte() as u32) + 12;
+        let root_note = (root.into_byte() as u32) + 13; // off by one in the file format
         let sample_name = std::path::Path::new(&sample_file)
             .file_stem()
             .unwrap()
@@ -69,6 +75,8 @@ pub fn make_program(name: &str, keygroups: Vec<Keygroup>) -> Element {
             .push(XMLNode::Element(program_keygroup));
     }
 
+    program.set_child_text("KeygroupNumKeygroups", num_keygroups.to_string());
+
     program_root
 }
 
@@ -84,7 +92,7 @@ mod tests {
     fn make_program_test() {
         let program = make_program(
             "Hello World",
-            vec![Keygroup::new(
+            &vec![Keygroup::new(
                 Range::new(MidiNote::from(0), MidiNote::from(127)),
                 MidiNote::from(47),
                 "HELLO".to_string(),

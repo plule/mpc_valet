@@ -1,17 +1,13 @@
 use egui_extras::{Size, TableBuilder};
 
-use crate::{keygroup::make_keygroups, KeygroupProgram};
+use crate::KeygroupProgram;
 
+#[derive(Default)]
 pub struct TemplateApp {
     pub program: KeygroupProgram,
-}
 
-impl Default for TemplateApp {
-    fn default() -> Self {
-        Self {
-            program: KeygroupProgram::default(),
-        }
-    }
+    #[cfg(not(target_arch = "wasm32"))]
+    pub sample_dir: std::path::PathBuf,
 }
 
 impl TemplateApp {
@@ -31,77 +27,99 @@ impl eframe::App for TemplateApp {
             ui.heading("eframe template");
             egui::warn_if_debug_build(ui);
 
+            ui.text_edit_singleline(&mut self.program.name);
+
             if self.program.keygroups.is_empty() {
                 ui.label("Drag-and-drop files onto the window!");
-            } else {
-                TableBuilder::new(ui)
-                    .striped(true)
-                    .cell_layout(
-                        egui::Layout::left_to_right().with_cross_align(egui::Align::Center),
-                    )
-                    .columns(Size::initial(120.0), 5)
-                    .header(20.0, |mut header| {
-                        header.col(|ui| {
-                            ui.heading("Sample");
-                        });
-                        header.col(|ui| {
-                            ui.heading("Root note");
-                        });
-                        header.col(|ui| {
-                            ui.heading("Low note");
-                        });
-                        header.col(|ui| {
-                            ui.heading("High note");
-                        });
-                        header.col(|ui| {
-                            if ui.button("Clear").clicked() {
-                                self.program.keygroups.clear();
-                            }
-                        });
-                    })
-                    .body(|mut body| {
-                        let mut delete_index = None;
-                        for (index, keygroup) in self.program.keygroups.iter().enumerate() {
-                            body.row(20.0, |mut row| {
-                                row.col(|ui| {
-                                    ui.label(keygroup.file.clone());
-                                });
-                                row.col(|ui| match keygroup.root {
-                                    Some(root) => {
-                                        ui.label(format!("{}{}", root.pitch(), root.octave(),));
-                                    }
-                                    None => {
-                                        ui.label("???");
-                                    }
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}{}",
-                                        keygroup.range.low.pitch(),
-                                        keygroup.range.low.octave(),
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}{}",
-                                        keygroup.range.high.pitch(),
-                                        keygroup.range.high.octave(),
-                                    ));
-                                });
-                                row.col(|ui| {
-                                    if ui.button("Delete").clicked() {
-                                        delete_index = Some(index);
-                                    }
-                                });
-                            });
-                        }
+            }
 
-                        if let Some(delete_index) = delete_index {
-                            self.program.keygroups.remove(delete_index);
-                            self.program.guess_roots();
-                            self.program.guess_ranges();
+            TableBuilder::new(ui)
+                .striped(true)
+                .cell_layout(egui::Layout::left_to_right().with_cross_align(egui::Align::Center))
+                .columns(Size::initial(120.0), 5)
+                .header(20.0, |mut header| {
+                    header.col(|ui| {
+                        ui.heading("Sample");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Root note");
+                    });
+                    header.col(|ui| {
+                        ui.heading("Low note");
+                    });
+                    header.col(|ui| {
+                        ui.heading("High note");
+                    });
+                    header.col(|ui| {
+                        if ui.button("Clear").clicked() {
+                            self.program.keygroups.clear();
                         }
                     });
+                })
+                .body(|mut body| {
+                    let mut delete_index = None;
+                    for (index, keygroup) in self.program.keygroups.iter().enumerate() {
+                        body.row(20.0, |mut row| {
+                            row.col(|ui| {
+                                ui.label(keygroup.file.clone());
+                            });
+                            row.col(|ui| match keygroup.root {
+                                Some(root) => {
+                                    ui.label(format!("{}{}", root.pitch(), root.octave(),));
+                                }
+                                None => {
+                                    ui.label("???");
+                                }
+                            });
+                            row.col(|ui| {
+                                ui.label(format!(
+                                    "{}{}",
+                                    keygroup.range.low.pitch(),
+                                    keygroup.range.low.octave(),
+                                ));
+                            });
+                            row.col(|ui| {
+                                ui.label(format!(
+                                    "{}{}",
+                                    keygroup.range.high.pitch(),
+                                    keygroup.range.high.octave(),
+                                ));
+                            });
+                            row.col(|ui| {
+                                if ui.button("Delete").clicked() {
+                                    delete_index = Some(index);
+                                }
+                            });
+                        });
+                    }
+
+                    if let Some(delete_index) = delete_index {
+                        self.program.keygroups.remove(delete_index);
+                        self.program.guess_roots();
+                        self.program.guess_ranges();
+                    }
+                });
+
+            #[cfg(not(target_arch = "wasm32"))]
+            if ui.button("Save").clicked() {
+                use rfd::FileDialog;
+                use std::fs::File;
+
+                if let Some(dest) = FileDialog::new()
+                    .set_directory(&self.sample_dir)
+                    .add_filter("MPC Program", &["xpm"])
+                    .set_file_name(format!("{}.xpm", self.program.name).as_str())
+                    .save_file()
+                {
+                    match File::create(dest) {
+                        Ok(f) => {
+                            self.program.export(f);
+                        }
+                        Err(e) => {
+                            ui.label(format!("Failed to create the program: {}", e));
+                        }
+                    }
+                }
             }
         });
 
@@ -109,21 +127,18 @@ impl eframe::App for TemplateApp {
 
         // Collect dropped files:
         if !ctx.input().raw.dropped_files.is_empty() {
+            #[cfg(not(target_arch = "wasm32"))]
+            if let Some(path) = &ctx.input().raw.dropped_files[0].path {
+                if let Some(dir) = path.parent() {
+                    self.sample_dir = dir.clone().to_path_buf();
+                }
+            }
             let filenames: Vec<String> = ctx
                 .input()
                 .raw
                 .dropped_files
                 .iter()
-                .map(|drop| {
-                    drop.path
-                        .as_ref()
-                        .unwrap()
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .to_string()
-                })
+                .map(|drop| drop.name.to_string())
                 .collect();
             self.program.add_files(filenames);
             self.program.guess_roots();

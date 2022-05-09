@@ -6,13 +6,14 @@ pub mod keygroup;
 pub mod parse;
 pub mod range;
 
+use std::io::Write;
+
 pub use app::TemplateApp;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
-use itertools::Itertools;
 use music_note::midi::MidiNote;
-use parse::find_best_candidate;
+use xmltree::EmitterConfig;
 
 /// This is the entry-point for all the web-assembly.
 /// This is called once from the HTML.
@@ -30,18 +31,22 @@ pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
     eframe::start_web(canvas_id, Box::new(|cc| Box::new(TemplateApp::new(cc))))
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct KeygroupProgram {
+    pub name: String,
     pub keygroups: Vec<Keygroup>,
 }
 
-impl KeygroupProgram {
-    pub fn from_files(files: Vec<String>) -> Self {
+impl Default for KeygroupProgram {
+    fn default() -> Self {
         Self {
-            keygroups: files.into_iter().map(Keygroup::from_file).collect(),
+            name: "My Keygroup Program".to_string(),
+            keygroups: Default::default(),
         }
     }
+}
 
+impl KeygroupProgram {
     pub fn add_files(&mut self, files: Vec<String>) {
         self.keygroups
             .extend(files.into_iter().map(Keygroup::from_file));
@@ -49,7 +54,7 @@ impl KeygroupProgram {
 
     pub fn guess_roots(&mut self) {
         let filenames: Vec<&str> = self.keygroups.iter().map(|kg| kg.file.as_str()).collect();
-        let roots = find_best_candidate(filenames.clone());
+        let roots = parse::find_best_candidate(filenames.clone());
         for (kg, root) in self.keygroups.iter_mut().zip(roots.into_iter()) {
             kg.root = root;
         }
@@ -68,6 +73,14 @@ impl KeygroupProgram {
         for (kg, range) in kg_with_root.into_iter().zip(ranges.into_iter()) {
             kg.range = range;
         }
+    }
+
+    pub fn export<W: Write>(&self, w: W) {
+        let program = export::make_program(&self.name, &self.keygroups);
+        let mut cfg = EmitterConfig::new();
+        cfg.perform_indent = true;
+
+        program.write_with_config(w, cfg).unwrap();
     }
 }
 
@@ -96,7 +109,7 @@ impl Keygroup {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Range {
     pub low: MidiNote,
     pub high: MidiNote,
