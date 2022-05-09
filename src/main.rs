@@ -35,7 +35,7 @@ fn cli(dir: &str) {
     let filenames: Vec<String> = files
         .map(|p| p.unwrap().to_str().unwrap().to_string())
         .collect();
-    let keygroups = make_keygroups(filenames);
+    let keygroups = make_keygroups(filenames.iter().map(|f| f.as_str()));
     let program = make_program(program_name, keygroups);
     let mut cfg = EmitterConfig::new();
     cfg.perform_indent = true;

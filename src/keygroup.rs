@@ -1,8 +1,8 @@
-use crate::parse::find_samples_roots;
+use crate::parse::find_best_candidate;
 use crate::range::build_ranges;
 use music_note::midi::MidiNote;
 
-use crate::range::Range;
+use crate::Keygroup;
 
 struct Sample {
     file: String,
@@ -15,32 +15,23 @@ impl Sample {
     }
 }
 
-#[derive(Debug)]
-pub struct KeyGroup {
-    pub range: Range,
-    pub root: MidiNote,
-    pub file: String,
-}
-
-impl KeyGroup {
-    pub fn new(range: Range, root: MidiNote, file: String) -> Self {
-        Self { range, root, file }
-    }
-}
-
-pub fn make_keygroups(filenames: Vec<String>) -> Vec<KeyGroup> {
-    let roots = find_samples_roots(&filenames);
+pub fn make_keygroups<'a, I>(filenames: I) -> Vec<Keygroup>
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let filenames: Vec<&str> = filenames.into_iter().collect();
+    let roots = find_best_candidate(filenames.clone());
     let mut samples: Vec<Sample> = filenames
         .into_iter()
         .zip(roots.into_iter())
-        .map(|(name, root)| Sample::new(name, root))
+        .map(|(name, root)| Sample::new(name.to_string(), root.unwrap()))
         .collect();
     samples.sort_by_key(|s| s.root);
     let ranges = build_ranges(samples.iter().map(|s| &s.root));
     let keygroups = samples
         .into_iter()
         .zip(ranges.into_iter())
-        .map(|(sample, range)| KeyGroup::new(range, sample.root, sample.file))
+        .map(|(sample, range)| Keygroup::new(range, sample.root, sample.file))
         .collect();
     keygroups
 }

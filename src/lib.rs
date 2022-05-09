@@ -8,11 +8,11 @@ pub mod range;
 
 pub use app::TemplateApp;
 
-// ----------------------------------------------------------------------------
-// When compiling for web:
-
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
+use itertools::Itertools;
+use music_note::midi::MidiNote;
+use parse::find_best_candidate;
 
 /// This is the entry-point for all the web-assembly.
 /// This is called once from the HTML.
@@ -28,4 +28,91 @@ pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
     tracing_wasm::set_as_global_default();
 
     eframe::start_web(canvas_id, Box::new(|cc| Box::new(TemplateApp::new(cc))))
+}
+
+#[derive(Debug, Default)]
+pub struct KeygroupProgram {
+    pub keygroups: Vec<Keygroup>,
+}
+
+impl KeygroupProgram {
+    pub fn from_files(files: Vec<String>) -> Self {
+        Self {
+            keygroups: files.into_iter().map(Keygroup::from_file).collect(),
+        }
+    }
+
+    pub fn add_files(&mut self, files: Vec<String>) {
+        self.keygroups
+            .extend(files.into_iter().map(Keygroup::from_file));
+    }
+
+    pub fn guess_roots(&mut self) {
+        let filenames: Vec<&str> = self.keygroups.iter().map(|kg| kg.file.as_str()).collect();
+        let roots = find_best_candidate(filenames.clone());
+        for (kg, root) in self.keygroups.iter_mut().zip(roots.into_iter()) {
+            kg.root = root;
+        }
+
+        self.keygroups.sort_by_key(|kg| kg.root);
+    }
+
+    pub fn guess_ranges(&mut self) {
+        let kg_with_root: Vec<&mut Keygroup> = self
+            .keygroups
+            .iter_mut()
+            .filter(|kg| kg.root.is_some())
+            .collect();
+        let roots: Vec<MidiNote> = kg_with_root.iter().map(|kg| kg.root.unwrap()).collect();
+        let ranges = range::build_ranges(&roots);
+        for (kg, range) in kg_with_root.into_iter().zip(ranges.into_iter()) {
+            kg.range = range;
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Keygroup {
+    pub range: Range,
+    pub root: Option<MidiNote>,
+    pub file: String,
+}
+
+impl Keygroup {
+    pub fn new(range: Range, root: MidiNote, file: String) -> Self {
+        Self {
+            range,
+            root: Some(root),
+            file,
+        }
+    }
+
+    pub fn from_file(file: String) -> Self {
+        Self {
+            file,
+            root: None,
+            range: Range::default(),
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Range {
+    pub low: MidiNote,
+    pub high: MidiNote,
+}
+
+impl Range {
+    pub fn new(low: MidiNote, high: MidiNote) -> Self {
+        Self { low, high }
+    }
+}
+
+impl Default for Range {
+    fn default() -> Self {
+        Self {
+            low: MidiNote::from_byte(0),
+            high: MidiNote::from_byte(127),
+        }
+    }
 }

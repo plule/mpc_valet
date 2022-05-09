@@ -1,6 +1,6 @@
 use xmltree::{Element, XMLNode};
 
-use crate::keygroup::KeyGroup;
+use crate::Keygroup;
 
 trait SetChildText {
     fn set_child_text(&mut self, child: &str, text: String);
@@ -23,7 +23,7 @@ impl SetText for Element {
     }
 }
 
-pub fn make_program(name: &str, keygroups: Vec<KeyGroup>) -> Element {
+pub fn make_program(name: &str, keygroups: Vec<Keygroup>) -> Element {
     let reference = include_str!("Reference.xpm");
     let mut program_root = Element::parse(reference.as_bytes()).unwrap();
     let program = program_root.get_mut_child("Program").unwrap();
@@ -39,7 +39,7 @@ pub fn make_program(name: &str, keygroups: Vec<KeyGroup>) -> Element {
         let keygroup_number = i + 1;
         let low_note = (keygroup.range.low.into_byte() as u32) + 12;
         let high_note = (keygroup.range.high.into_byte() as u32) + 12;
-        let root_note = (keygroup.root.into_byte() as u32) + 13; // off by one in the file format
+        let root_note = (keygroup.root.unwrap().into_byte() as u32) + 13; // off by one in the file format
         let sample_file = keygroup.file;
         let sample_name = std::path::Path::new(&sample_file)
             .file_stem()
@@ -76,7 +76,7 @@ pub fn make_program(name: &str, keygroups: Vec<KeyGroup>) -> Element {
 mod tests {
     use music_note::midi::MidiNote;
 
-    use crate::range::Range;
+    use crate::Range;
 
     pub use super::*;
 
@@ -84,7 +84,7 @@ mod tests {
     fn make_program_test() {
         let program = make_program(
             "Hello World",
-            vec![KeyGroup::new(
+            vec![Keygroup::new(
                 Range::new(MidiNote::from(0), MidiNote::from(127)),
                 MidiNote::from(47),
                 "HELLO".to_string(),

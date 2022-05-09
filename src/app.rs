@@ -1,15 +1,15 @@
 use egui_extras::{Size, TableBuilder};
 
-use crate::keygroup::{make_keygroups, KeyGroup};
+use crate::{keygroup::make_keygroups, KeygroupProgram};
 
 pub struct TemplateApp {
-    keygroups: Vec<KeyGroup>,
+    pub program: KeygroupProgram,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            keygroups: Vec::new(),
+            program: KeygroupProgram::default(),
         }
     }
 }
@@ -26,12 +26,12 @@ impl TemplateApp {
 impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("eframe template");
             egui::warn_if_debug_build(ui);
 
-            if self.keygroups.is_empty() {
+            if self.program.keygroups.is_empty() {
                 ui.label("Drag-and-drop files onto the window!");
             } else {
                 TableBuilder::new(ui)
@@ -39,7 +39,7 @@ impl eframe::App for TemplateApp {
                     .cell_layout(
                         egui::Layout::left_to_right().with_cross_align(egui::Align::Center),
                     )
-                    .columns(Size::initial(120.0), 4)
+                    .columns(Size::initial(120.0), 5)
                     .header(20.0, |mut header| {
                         header.col(|ui| {
                             ui.heading("Sample");
@@ -53,19 +53,26 @@ impl eframe::App for TemplateApp {
                         header.col(|ui| {
                             ui.heading("High note");
                         });
+                        header.col(|ui| {
+                            if ui.button("Clear").clicked() {
+                                self.program.keygroups.clear();
+                            }
+                        });
                     })
                     .body(|mut body| {
-                        for keygroup in &self.keygroups {
+                        let mut delete_index = None;
+                        for (index, keygroup) in self.program.keygroups.iter().enumerate() {
                             body.row(20.0, |mut row| {
                                 row.col(|ui| {
                                     ui.label(keygroup.file.clone());
                                 });
-                                row.col(|ui| {
-                                    ui.label(format!(
-                                        "{}{}",
-                                        keygroup.root.pitch(),
-                                        keygroup.root.octave(),
-                                    ));
+                                row.col(|ui| match keygroup.root {
+                                    Some(root) => {
+                                        ui.label(format!("{}{}", root.pitch(), root.octave(),));
+                                    }
+                                    None => {
+                                        ui.label("???");
+                                    }
                                 });
                                 row.col(|ui| {
                                     ui.label(format!(
@@ -81,7 +88,18 @@ impl eframe::App for TemplateApp {
                                         keygroup.range.high.octave(),
                                     ));
                                 });
+                                row.col(|ui| {
+                                    if ui.button("Delete").clicked() {
+                                        delete_index = Some(index);
+                                    }
+                                });
                             });
+                        }
+
+                        if let Some(delete_index) = delete_index {
+                            self.program.keygroups.remove(delete_index);
+                            self.program.guess_roots();
+                            self.program.guess_ranges();
                         }
                     });
             }
@@ -107,8 +125,9 @@ impl eframe::App for TemplateApp {
                         .to_string()
                 })
                 .collect();
-
-            self.keygroups = make_keygroups(filenames);
+            self.program.add_files(filenames);
+            self.program.guess_roots();
+            self.program.guess_ranges();
         }
     }
 }

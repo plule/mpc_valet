@@ -1,16 +1,6 @@
 use music_note::{midi::MidiNote, Interval};
 
-#[derive(PartialEq, Debug)]
-pub struct Range {
-    pub low: MidiNote,
-    pub high: MidiNote,
-}
-
-impl Range {
-    pub fn new(low: MidiNote, high: MidiNote) -> Self {
-        Self { low, high }
-    }
-}
+use crate::Range;
 
 /// Create an appropriate set of ranges from midi notes
 pub fn build_ranges<'a, I>(notes: I) -> Vec<Range>
