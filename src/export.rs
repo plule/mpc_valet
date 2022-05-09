@@ -37,13 +37,15 @@ where
     let reference_keygroup = program_keygroups.take_child("Instrument").unwrap();
 
     let mut num_keygroups = 0;
-    for (sample_file, root, range) in keygroups.into_iter().filter_map(|kg| match kg.root {
-        Some(root) => Some((kg.file.to_string(), root, kg.range.clone())),
+    for (sample_file, settings) in keygroups.into_iter().filter_map(|kg| match &kg.settings {
+        Some(settings) => Some((kg.file.to_string(), settings.clone())),
         None => None,
     }) {
         num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
         let keygroup_number = num_keygroups;
+        let range = settings.range;
+        let root = settings.root;
         let low_note = (range.low.into_byte() as u32) + 12;
         let high_note = (range.high.into_byte() as u32) + 12;
         let root_note = (root.into_byte() as u32) + 13; // off by one in the file format

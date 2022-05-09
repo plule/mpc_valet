@@ -47,22 +47,20 @@ impl TemplateApp {
         // Save
         ui.vertical_centered(|ui| {
             ui.horizontal(|ui| {
-                ui.horizontal(|ui| {
-                    ui.label("Instrument Name:");
-                    ui.text_edit_singleline(&mut self.program.name);
+                ui.label("Instrument Name:");
+                ui.text_edit_singleline(&mut self.program.name);
 
-                    ui.add_enabled_ui(self.program.can_export(), |ui| {
-                        let button = ui
-                            .button(RichText::new("Save").font(FontId::proportional(20.0)))
-                            .on_disabled_hover_text("Add samples first")
-                            .on_hover_text(
-                                "Make sure to save the file in the same folder as the samples!",
-                            );
-                        if button.clicked() {
-                            let file_name = format!("{}.xpm", self.program.name);
-                            self.export_program_dialog(ui, &file_name);
-                        }
-                    });
+                ui.add_enabled_ui(self.program.can_export(), |ui| {
+                    let button = ui
+                        .button(RichText::new("Save").font(FontId::proportional(20.0)))
+                        .on_disabled_hover_text("Add samples first")
+                        .on_hover_text(
+                            "Make sure to save the file in the same folder as the samples!",
+                        );
+                    if button.clicked() {
+                        let file_name = format!("{}.xpm", self.program.name);
+                        self.export_program_dialog(ui, &file_name);
+                    }
                 });
             });
         });
@@ -153,7 +151,10 @@ impl TemplateApp {
                 for (index, keygroup) in self.program.keygroups.iter().enumerate() {
                     body.row(20.0, |mut row| {
                         row.col(|ui| {
-                            if ui.button(RichText::new("❌").color(Color32::RED)).clicked() {
+                            if ui
+                                .button(RichText::new("❌").color(Color32::GRAY))
+                                .clicked()
+                            {
                                 delete_index = Some(index);
                             }
                         });
@@ -166,9 +167,13 @@ impl TemplateApp {
                                     .on_hover_text("Programs should be done from .wav samples.");
                             }
                         });
-                        row.col(|ui| match keygroup.root {
-                            Some(root) => {
-                                ui.label(format!("🎵 {}{}", root.pitch(), root.octave(),));
+                        row.col(|ui| match &keygroup.settings {
+                            Some(settings) => {
+                                ui.label(format!(
+                                    "🎵 {}{}",
+                                    settings.root.pitch(),
+                                    settings.root.octave(),
+                                ));
                             }
                             None => {
                                 ui.label("⚠ ???").on_hover_text(
@@ -176,14 +181,21 @@ impl TemplateApp {
                                 );
                             }
                         });
-                        row.col(|ui| {
-                            ui.label(format!(
-                                "{}{} to {}{}",
-                                keygroup.range.low.pitch(),
-                                keygroup.range.low.octave(),
-                                keygroup.range.high.pitch(),
-                                keygroup.range.high.octave(),
-                            ));
+                        row.col(|ui| match &keygroup.settings {
+                            Some(settings) => {
+                                ui.label(format!(
+                                    "{}{} to {}{}",
+                                    settings.range.low.pitch(),
+                                    settings.range.low.octave(),
+                                    settings.range.high.pitch(),
+                                    settings.range.high.octave(),
+                                ));
+                            }
+                            None => {
+                                ui.label("⚠ ???").on_hover_text(
+                                    "Unknown root note. This sample will be ignored.",
+                                );
+                            }
                         });
                     });
                 }
