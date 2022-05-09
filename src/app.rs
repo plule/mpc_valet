@@ -1,5 +1,5 @@
 use egui::{Color32, FontId, Layout, RichText, Vec2};
-use egui_extras::{Size, StripBuilder, TableBuilder};
+use egui_extras::{Size, TableBuilder};
 
 use crate::KeygroupProgram;
 

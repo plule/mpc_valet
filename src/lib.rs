@@ -2,7 +2,6 @@
 
 mod app;
 pub mod export;
-pub mod keygroup;
 pub mod parse;
 pub mod range;
 
