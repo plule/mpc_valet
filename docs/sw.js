@@ -2,8 +2,8 @@ var cacheName = 'egui-template-pwa';
 var filesToCache = [
   './',
   './index.html',
-  './mpc_keygroup_creator.js',
-  './mpc_keygroup_creator_bg.wasm',
+  './mpc_valet.js',
+  './mpc_valet_bg.wasm',
 ];
 
 /* Start the service worker and cache all of the app's content */

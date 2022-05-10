@@ -8,8 +8,8 @@ fn main() {
 
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "MPC Keygroup Instrument Creator",
+        "MPC Valet",
         native_options,
-        Box::new(|cc| Box::new(mpc_keygroup_creator::TemplateApp::new(cc))),
+        Box::new(|cc| Box::new(mpc_valet::TemplateApp::new(cc))),
     );
 }

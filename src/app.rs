@@ -22,7 +22,7 @@ impl TemplateApp {
     fn main_ui(&mut self, ui: &mut egui::Ui) {
         // Header
         ui.vertical_centered(|ui| {
-            ui.heading("MPC Keygroup Instrument Creator");
+            ui.heading("MPC Valet");
 
             for _ in 0..4 {
                 ui.heading(egui::RichText::new("▣ ▣ ▣ ▣").text_style(egui::TextStyle::Monospace));
@@ -81,7 +81,7 @@ impl TemplateApp {
             ui.spacing_mut().item_spacing.x = width;
             ui.small("Made by");
             ui.hyperlink_to(
-                egui::RichText::new("plule.").small(),
+                egui::RichText::new("plule").small(),
                 "https://plule.github.io/",
             );
             ui.small("with");

@@ -1,10 +1,10 @@
 [package]
-name = "mpc_keygroup_creator"
+name = "mpc_valet"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "mpc_keygroup_creator_bin"
+name = "mpc_valet_bin"
 path = "src/main.rs"
 
 [lib]
