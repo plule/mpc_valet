@@ -25,6 +25,9 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Install atk
+      run: sudo apt-get install -y libatk1.0-dev
     - name: Install wasm toolchain
       run: rustup target add wasm32-unknown-unknown
     - name: Install wasm bindgen
