@@ -1,4 +1,4 @@
-use egui::{Color32, FontId, Layout, RichText, Vec2};
+use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
 
 use crate::KeygroupProgram;
@@ -72,6 +72,25 @@ impl TemplateApp {
             ui.label("This software will find appropriate note range for each sample.");
             ui.label("When you are done, choose a name and click \"Save\". The XPM file must be saved in the same folder as the samples.");
             ui.label("Open the XPM with the MPC Software, or any of the MPC Live, One, X...");
+        });
+
+        ui.horizontal_wrapped(|ui| {
+            let width = ui
+                .fonts()
+                .glyph_width(&TextStyle::Body.resolve(ui.style()), ' ');
+            ui.spacing_mut().item_spacing.x = width;
+            ui.small("Made by");
+            ui.hyperlink_to(
+                egui::RichText::new("plule.").small(),
+                "https://plule.github.io/",
+            );
+            ui.small("with");
+            ui.hyperlink_to(egui::RichText::new("egui.").small(), "https://www.egui.rs");
+            ui.spacing();
+            ui.hyperlink_to(
+                egui::RichText::new("Source code.").small(),
+                "https://github.com/plule/mpc_valet",
+            );
         });
 
         egui::warn_if_debug_build(ui);
