@@ -79,6 +79,8 @@ impl TemplateApp {
                 .fonts()
                 .glyph_width(&TextStyle::Body.resolve(ui.style()), ' ');
             ui.spacing_mut().item_spacing.x = width;
+            const VERSION: &str = env!("CARGO_PKG_VERSION");
+            ui.small(format!("MPC Valet v{VERSION}."));
             ui.small("Made by");
             ui.hyperlink_to(
                 egui::RichText::new("plule").small(),

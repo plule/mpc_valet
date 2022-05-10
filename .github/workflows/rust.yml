@@ -1,0 +1,43 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    - name: Install wasm toolchain
+      run: rustup target add wasm32-unknown-unknown
+    - name: Install wasm bindgen
+      run: cargo install -f wasm-bindgen-cli
+    - name: Run tests
+      run: cargo test --verbose
+    - name: Build for web
+      run: cargo build --release --lib --target wasm32-unknown-unknown
+    - name: Wasm bindgen
+      run: wasm-bindgen --out-dir ./docs/ --no-modules --no-typescript ./target/wasm32-unknown-unknown/release/mpc_valet.wasm
+    - name: Deploy
+      if: github.ref == 'refs/heads/main'
+      uses: JamesIves/github-pages-deploy-action@v4.3.0
+      with:
+        branch: gh-pages
+        folder: docs

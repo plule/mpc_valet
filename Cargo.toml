@@ -2,6 +2,11 @@
 name = "mpc_valet"
 version = "0.1.0"
 edition = "2021"
+authors = ["Pierre Lulé <pierre@lule.fr>"]
+description = "A tool for creating instrument for MPC drum machines."
+readme = "README.md"
+repository = "https://github.com/plule/mpc_valet"
+license = "MIT OR Apache-2.0"
 
 [[bin]]
 name = "mpc_valet_bin"
