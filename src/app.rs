@@ -1,9 +1,6 @@
 use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
-use music_note::{
-    midi::{MidiNote, Octave},
-    Pitch,
-};
+use music_note::midi::MidiNote;
 
 use crate::{KeygroupProgram, KeygroupSettings, Range};
 
@@ -206,11 +203,9 @@ impl TemplateApp {
                             };
 
                             ui.menu_button(text, |ui| {
-                                for octave in -1..9_i8 {
-                                    let octave = Octave::new_unchecked(octave);
+                                for octave in crate::OCTAVES {
                                     ui.menu_button(format!("Octave {}", octave), |ui| {
-                                        for pitch in 0..12 {
-                                            let pitch = Pitch::from(pitch);
+                                        for pitch in crate::PITCHES {
                                             if ui.button(format!("{}{}", pitch, octave)).clicked() {
                                                 let root = MidiNote::new(pitch, octave);
                                                 keygroup.settings = Some(KeygroupSettings::new(

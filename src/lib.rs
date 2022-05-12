@@ -11,7 +11,10 @@ pub use app::TemplateApp;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
-use music_note::midi::MidiNote;
+use music_note::{
+    midi::{MidiNote, Octave},
+    Pitch,
+};
 use xmltree::EmitterConfig;
 
 /// This is the entry-point for all the web-assembly.
@@ -29,6 +32,34 @@ pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
 
     eframe::start_web(canvas_id, Box::new(|cc| Box::new(TemplateApp::new(cc))))
 }
+
+pub const OCTAVES: [Octave; 10] = [
+    Octave::NEGATIVE_ONE,
+    Octave::ZERO,
+    Octave::ONE,
+    Octave::TWO,
+    Octave::THREE,
+    Octave::FOUR,
+    Octave::FIVE,
+    Octave::SIX,
+    Octave::SEVEN,
+    Octave::EIGHT,
+];
+
+pub const PITCHES: [Pitch; 12] = [
+    Pitch::C,
+    Pitch::CSharp,
+    Pitch::D,
+    Pitch::DSharp,
+    Pitch::E,
+    Pitch::F,
+    Pitch::FSharp,
+    Pitch::G,
+    Pitch::GSharp,
+    Pitch::A,
+    Pitch::ASharp,
+    Pitch::B,
+];
 
 #[derive(Debug)]
 pub struct KeygroupProgram {
