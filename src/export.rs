@@ -46,9 +46,9 @@ where
         let keygroup_number = num_keygroups;
         let range = settings.range;
         let root = settings.root;
-        let low_note = (range.low.into_byte() as u32) + 12;
-        let high_note = (range.high.into_byte() as u32) + 12;
-        let root_note = (root.into_byte() as u32) + 13; // off by one in the file format
+        let low_note = range.low.into_byte() as u32;
+        let high_note = range.high.into_byte() as u32;
+        let root_note = (root.into_byte() as u32) + 1; // off by one in the file format
         let sample_name = std::path::Path::new(&sample_file)
             .file_stem()
             .unwrap()
