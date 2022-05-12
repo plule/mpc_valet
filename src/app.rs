@@ -1,7 +1,11 @@
 use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
+use music_note::{
+    midi::{MidiNote, Octave},
+    Pitch,
+};
 
-use crate::KeygroupProgram;
+use crate::{KeygroupProgram, KeygroupSettings, Range};
 
 #[derive(Default)]
 pub struct TemplateApp {
@@ -169,7 +173,8 @@ impl TemplateApp {
             })
             .body(|mut body| {
                 let mut delete_index = None;
-                for (index, keygroup) in self.program.keygroups.iter().enumerate() {
+                let mut guess_ranges = false;
+                for (index, keygroup) in self.program.keygroups.iter_mut().enumerate() {
                     body.row(20.0, |mut row| {
                         row.col(|ui| {
                             if ui
@@ -188,19 +193,37 @@ impl TemplateApp {
                                     .on_hover_text("Programs should be done from .wav samples.");
                             }
                         });
-                        row.col(|ui| match &keygroup.settings {
-                            Some(settings) => {
-                                ui.label(format!(
-                                    "🎵 {}{}",
-                                    settings.root.pitch(),
-                                    settings.root.octave(),
-                                ));
-                            }
-                            None => {
-                                ui.label("⚠ ???").on_hover_text(
-                                    "Unknown root note. This sample will be ignored.",
-                                );
-                            }
+                        row.col(|ui| {
+                            let text = match &keygroup.settings {
+                                Some(settings) => {
+                                    format!(
+                                        "🎵 {}{}",
+                                        settings.root.pitch(),
+                                        settings.root.octave(),
+                                    )
+                                }
+                                None => "⚠ ???".to_string(),
+                            };
+
+                            ui.menu_button(text, |ui| {
+                                for octave in -1..9_i8 {
+                                    let octave = Octave::new_unchecked(octave);
+                                    ui.menu_button(format!("Octave {}", octave), |ui| {
+                                        for pitch in 0..13 {
+                                            let pitch = Pitch::from(pitch);
+                                            if ui.button(format!("{}{}", pitch, octave)).clicked() {
+                                                let root = MidiNote::new(pitch, octave);
+                                                keygroup.settings = Some(KeygroupSettings::new(
+                                                    root,
+                                                    Range::default(),
+                                                ));
+                                                guess_ranges = true;
+                                                ui.close_menu();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
                         });
                         row.col(|ui| match &keygroup.settings {
                             Some(settings) => {
@@ -224,6 +247,10 @@ impl TemplateApp {
                 if let Some(delete_index) = delete_index {
                     self.program.keygroups.remove(delete_index);
                     self.program.guess_roots();
+                    self.program.guess_ranges();
+                }
+
+                if guess_ranges {
                     self.program.guess_ranges();
                 }
             });

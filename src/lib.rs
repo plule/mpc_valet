@@ -59,11 +59,10 @@ impl KeygroupProgram {
                 kg.settings = Some(KeygroupSettings::new(root, Range::default()));
             }
         }
-
-        self.keygroups.sort_by(|a, b| a.settings.cmp(&b.settings));
     }
 
     pub fn guess_ranges(&mut self) {
+        self.keygroups.sort_by(|a, b| a.settings.cmp(&b.settings));
         let kg_settings: Vec<&mut KeygroupSettings> = self
             .keygroups
             .iter_mut()
