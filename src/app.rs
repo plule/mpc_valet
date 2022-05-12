@@ -209,7 +209,7 @@ impl TemplateApp {
                                 for octave in -1..9_i8 {
                                     let octave = Octave::new_unchecked(octave);
                                     ui.menu_button(format!("Octave {}", octave), |ui| {
-                                        for pitch in 0..13 {
+                                        for pitch in 0..12 {
                                             let pitch = Pitch::from(pitch);
                                             if ui.button(format!("{}{}", pitch, octave)).clicked() {
                                                 let root = MidiNote::new(pitch, octave);
