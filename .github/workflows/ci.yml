@@ -34,7 +34,7 @@ jobs:
     - uses: actions-rs/cargo@v1
       with:
         command: build
-        target: ${{ matrix.target }}
+        args: --target ${{ matrix.target }}
   
   test:
     name: test
