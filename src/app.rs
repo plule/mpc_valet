@@ -34,31 +34,16 @@ impl TemplateApp {
     }
 
     fn main_ui(&mut self, ui: &mut egui::Ui) {
-        // Header
-        ui.vertical_centered(|ui| {
-            ui.heading("MPC Valet");
-
-            for _ in 0..4 {
-                ui.heading(egui::RichText::new("▣ ▣ ▣ ▣").text_style(egui::TextStyle::Monospace));
-            }
-        });
-
+        header_ui(ui);
         ui.separator();
-
-        // Sample table
-        if self.program.keygroups.is_empty() {
-            ui.vertical_centered(|ui| {
-                ui.label(
-                    RichText::new("⮊ Drag-and-drop you samples here! ⮈")
-                        .font(FontId::proportional(20.0)),
-                );
-            });
-        } else {
-            self.samples_table(ui);
-        }
+        self.samples_area_ui(ui);
         ui.separator();
+        self.save_ui(ui);
+        instructions_ui(ui);
+        self.footer_ui(ui);
+    }
 
-        // Save
+    fn save_ui(&mut self, ui: &mut egui::Ui) {
         ui.vertical_centered(|ui| {
             ui.horizontal(|ui| {
                 ui.label("Instrument Name:");
@@ -80,42 +65,6 @@ impl TemplateApp {
                 });
             });
         });
-
-        // Instructions
-        ui.collapsing("Instructions", |ui| {
-            ui.label("Drag and drop samples from instrument notes on this window.");
-            ui.label("Make sure the file contain the note in their name, such as \"Violin-C3.wav\" or \"Flute-43.wav\"");
-            ui.label("This software will find appropriate note range for each sample.");
-            ui.label("When you are done, choose a name and click \"Save\". The XPM file must be saved in the same folder as the samples.");
-            ui.label("Open the XPM with the MPC Software, or any of the MPC Live, One, X...");
-        });
-
-        ui.horizontal_wrapped(|ui| {
-            let width = ui
-                .fonts()
-                .glyph_width(&TextStyle::Body.resolve(ui.style()), ' ');
-            ui.spacing_mut().item_spacing.x = width;
-            const VERSION: &str = env!("CARGO_PKG_VERSION");
-            ui.small(format!("MPC Valet v{VERSION}."));
-            ui.small("Made by");
-            ui.hyperlink_to(
-                egui::RichText::new("plule").small(),
-                "https://plule.github.io/",
-            );
-            ui.small("with");
-            ui.hyperlink_to(egui::RichText::new("egui.").small(), "https://www.egui.rs");
-            ui.spacing();
-            ui.hyperlink_to(
-                egui::RichText::new("Source code.").small(),
-                "https://github.com/plule/mpc_valet",
-            );
-        });
-
-        if let Err(e) = &self.last_error {
-            ui.label(RichText::new(format!("{:?}", e)).color(Color32::RED));
-        }
-
-        egui::warn_if_debug_build(ui);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -182,6 +131,19 @@ impl TemplateApp {
             .context("Failed to remove the element from the document")?;
 
         Ok(())
+    }
+
+    fn samples_area_ui(&mut self, ui: &mut egui::Ui) {
+        if self.program.keygroups.is_empty() {
+            ui.vertical_centered(|ui| {
+                ui.label(
+                    RichText::new("⮊ Drag-and-drop you samples here! ⮈")
+                        .font(FontId::proportional(20.0)),
+                );
+            });
+        } else {
+            self.samples_table(ui);
+        }
     }
 
     fn samples_table(&mut self, ui: &mut egui::Ui) {
@@ -286,6 +248,53 @@ impl TemplateApp {
                 }
             });
     }
+
+    fn footer_ui(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_wrapped(|ui| {
+            let width = ui
+                .fonts()
+                .glyph_width(&TextStyle::Body.resolve(ui.style()), ' ');
+            ui.spacing_mut().item_spacing.x = width;
+            const VERSION: &str = env!("CARGO_PKG_VERSION");
+            ui.small(format!("MPC Valet v{VERSION}."));
+            ui.small("Made by");
+            ui.hyperlink_to(
+                egui::RichText::new("plule").small(),
+                "https://plule.github.io/",
+            );
+            ui.small("with");
+            ui.hyperlink_to(egui::RichText::new("egui.").small(), "https://www.egui.rs");
+            ui.spacing();
+            ui.hyperlink_to(
+                egui::RichText::new("Source code.").small(),
+                "https://github.com/plule/mpc_valet",
+            );
+        });
+        if let Err(e) = &self.last_error {
+            ui.label(RichText::new(format!("{:?}", e)).color(Color32::RED));
+        }
+        egui::warn_if_debug_build(ui);
+    }
+}
+
+fn instructions_ui(ui: &mut egui::Ui) {
+    ui.collapsing("Instructions", |ui| {
+        ui.label("Drag and drop samples from instrument notes on this window.");
+        ui.label("Make sure the file contain the note in their name, such as \"Violin-C3.wav\" or \"Flute-43.wav\"");
+        ui.label("This software will find appropriate note range for each sample.");
+        ui.label("When you are done, choose a name and click \"Save\". The XPM file must be saved in the same folder as the samples.");
+        ui.label("Open the XPM with the MPC Software, or any of the MPC Live, One, X...");
+    });
+}
+
+fn header_ui(ui: &mut egui::Ui) {
+    ui.vertical_centered(|ui| {
+        ui.heading("MPC Valet");
+
+        for _ in 0..4 {
+            ui.heading(egui::RichText::new("▣ ▣ ▣ ▣").text_style(egui::TextStyle::Monospace));
+        }
+    });
 }
 
 impl eframe::App for TemplateApp {
