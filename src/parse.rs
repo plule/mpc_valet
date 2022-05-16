@@ -9,36 +9,47 @@ use regex::Regex;
 
 pub fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(r"1[0-2]\d|\d\d|\d").unwrap();
+        static ref RE: Regex =
+            Regex::new(r"1[0-2]\d|\d\d|\d").expect("BUG: Invalid number notation regex");
     }
 
     let capture = RE.captures(filename)?;
-    let number = capture[0].parse::<u8>().unwrap();
+    let number = capture[0].parse::<u8>().ok()?;
     Some(MidiNote::from(number))
 }
 
 pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
         static ref RE: Regex =
-            Regex::new(r"(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])").unwrap();
+            Regex::new(r"(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])")
+                .expect("BUG: Invalid letter notation regex");
     }
 
     let capture = RE.captures(filename)?;
 
-    let letter = capture.name("letter").unwrap().as_str();
-    let accidental = capture.name("accidental").unwrap().as_str();
-    let octave = capture.name("octave").unwrap().as_str();
+    let letter = capture
+        .name("letter")
+        .expect("BUG: Regex did not have the letter capture")
+        .as_str();
+    let accidental = capture
+        .name("accidental")
+        .expect("BUG: Regex did not have the accidental capture")
+        .as_str();
+    let octave = capture
+        .name("octave")
+        .expect("BUG: Regex did not have the octave capture")
+        .as_str();
 
     let natural = match letter {
-        "A" => Natural::A,
-        "B" => Natural::B,
-        "C" => Natural::C,
-        "D" => Natural::D,
-        "E" => Natural::E,
-        "F" => Natural::F,
-        "G" => Natural::G,
-        _ => unreachable!(),
-    };
+        "A" => Some(Natural::A),
+        "B" => Some(Natural::B),
+        "C" => Some(Natural::C),
+        "D" => Some(Natural::D),
+        "E" => Some(Natural::E),
+        "F" => Some(Natural::F),
+        "G" => Some(Natural::G),
+        _ => None,
+    }?;
 
     let pitch = match accidental {
         "#" => Sharp::into_pitch(AccidentalKind::Single, natural),
@@ -47,8 +58,19 @@ pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
         _ => unreachable!(),
     };
 
-    let octave = octave.parse::<i8>().unwrap();
-    let octave = Octave::new_unchecked(octave);
+    let octave = match octave.parse::<i8>().ok()? {
+        -1 => Some(Octave::NEGATIVE_ONE),
+        0 => Some(Octave::ZERO),
+        1 => Some(Octave::ONE),
+        2 => Some(Octave::TWO),
+        3 => Some(Octave::THREE),
+        4 => Some(Octave::FOUR),
+        5 => Some(Octave::FIVE),
+        6 => Some(Octave::SIX),
+        7 => Some(Octave::SEVEN),
+        8 => Some(Octave::EIGHT),
+        _ => None,
+    }?;
 
     Some(MidiNote::new(pitch, octave))
 }
@@ -90,12 +112,7 @@ where
     letter_notation_result
         .into_iter()
         .zip(midi_number_result.into_iter())
-        .map(|(l, m)| {
-            if let Some(l) = l {
-                return Some(l);
-            }
-            return m;
-        })
+        .map(|(l, m)| l.or(m))
         .collect()
 }
 
@@ -113,6 +130,10 @@ mod tests {
     #[case(
         vec!["THMB40.WAV", "THMB43.WAV", "THMB48.WAV"],
         vec![Some(MidiNote::from(40)), Some(MidiNote::from(43)), Some(MidiNote::from(48))],
+    )]
+    #[case(
+        vec!["THMB-40.WAV", "THMB-43.WAV", "MELCEL-A2.WAV", "MELCEL-A3.WAV", "nope.WAV"],
+        vec![Some(MidiNote::from(40)), Some(MidiNote::from(43)), Some(midi!(A, 2)), Some(midi!(A, 3)), None],
     )]
     fn parse_roots(#[case] input: Vec<&str>, #[case] expected: Vec<Option<MidiNote>>) {
         let midi_notes = find_best_candidate(input);

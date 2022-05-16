@@ -1,15 +1,28 @@
+use crate::{KeygroupProgram, KeygroupSettings, Range};
+use anyhow::Context;
+use anyhow::Result;
 use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
 use music_note::midi::MidiNote;
 
-use crate::{KeygroupProgram, KeygroupSettings, Range};
-
-#[derive(Default)]
 pub struct TemplateApp {
     pub program: KeygroupProgram,
 
+    pub last_error: Result<()>,
+
     #[cfg(not(target_arch = "wasm32"))]
     pub sample_dir: std::path::PathBuf,
+}
+
+impl Default for TemplateApp {
+    fn default() -> Self {
+        Self {
+            program: Default::default(),
+            last_error: Ok(()),
+            #[cfg(not(target_arch = "wasm32"))]
+            sample_dir: Default::default(),
+        }
+    }
 }
 
 impl TemplateApp {
@@ -60,7 +73,9 @@ impl TemplateApp {
                         );
                     if button.clicked() {
                         let file_name = format!("{}.xpm", self.program.name);
-                        self.export_program_dialog(ui, &file_name);
+                        if let Err(e) = self.export_program_dialog(&file_name) {
+                            self.last_error = Err(e)
+                        }
                     }
                 });
             });
@@ -96,11 +111,15 @@ impl TemplateApp {
             );
         });
 
+        if let Err(e) = &self.last_error {
+            ui.label(RichText::new(format!("{:?}", e)).color(Color32::RED));
+        }
+
         egui::warn_if_debug_build(ui);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn export_program_dialog(&self, ui: &mut egui::Ui, file_name: &str) {
+    fn export_program_dialog(&self, file_name: &str) -> Result<()> {
         use rfd::FileDialog;
         use std::fs::File;
 
@@ -110,42 +129,59 @@ impl TemplateApp {
             .set_file_name(file_name)
             .save_file()
         {
-            match File::create(dest) {
-                Ok(f) => {
-                    self.program.export(f);
-                }
-                Err(e) => {
-                    ui.label(format!("Failed to create the program: {}", e));
-                }
-            }
+            let f = File::create(dest).context("Failed to create the instrument file")?;
+            self.program.export(f)?;
         }
+
+        Ok(())
     }
 
     #[cfg(target_arch = "wasm32")]
-    fn export_program_dialog(&self, _ui: &mut egui::Ui, file_name: &str) {
+    fn export_program_dialog(&self, file_name: &str) -> Result<()> {
         // look mom i do the web
+        use anyhow::bail;
         use eframe::wasm_bindgen::JsCast;
         use js_sys::encode_uri_component;
 
         let mut file_content = Vec::<u8>::new();
-        self.program.export(&mut file_content);
-        let file_content = String::from_utf8(file_content).unwrap();
+        self.program.export(&mut file_content)?;
+        let file_content = String::from_utf8(file_content)
+            .context("Failed to convert the instrument file to UTF8")?;
         let file_content = encode_uri_component(&file_content);
 
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        let element = document.create_element("a").unwrap();
-        let element = element.dyn_into::<web_sys::HtmlElement>().unwrap();
+        let window = web_sys::window().context("Failed to get the browser window")?;
+        let document = window
+            .document()
+            .context("Failed to get the window document")?;
+        let body = document.body().context("Failed to get the document body")?;
+        let element = document
+            .create_element("a")
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to insert a link in the document")?;
+        let element = element
+            .dyn_into::<web_sys::HtmlElement>()
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to convert the element to an HTML element")?;
         element
             .set_attribute(
                 "href",
                 format!("data:text/plain;charset=utf-8,{}", file_content).as_str(),
             )
-            .unwrap();
-        element.set_attribute("download", file_name).unwrap();
-        document.body().unwrap().append_child(&element).unwrap();
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to set the element destination")?;
+        element
+            .set_attribute("download", file_name)
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to create the download file name")?;
+        body.append_child(&element)
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to insert the element in the document")?;
         element.click();
-        document.body().unwrap().remove_child(&element).unwrap();
+        body.remove_child(&element)
+            .or_else(|e| bail!(e.as_string().unwrap_or_default()))
+            .context("Failed to remove the element from the document")?;
+
+        Ok(())
     }
 
     fn samples_table(&mut self, ui: &mut egui::Ui) {

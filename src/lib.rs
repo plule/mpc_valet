@@ -4,7 +4,7 @@ mod app;
 pub mod export;
 pub mod parse;
 pub mod range;
-
+use anyhow::Result;
 use std::io::Write;
 
 pub use app::TemplateApp;
@@ -106,12 +106,13 @@ impl KeygroupProgram {
         }
     }
 
-    pub fn export<W: Write>(&self, w: W) {
-        let program = export::make_program(&self.name, &self.keygroups);
+    pub fn export<W: Write>(&self, w: W) -> Result<()> {
+        let program = export::make_program(&self.name, &self.keygroups)?;
         let mut cfg = EmitterConfig::new();
         cfg.perform_indent = true;
 
-        program.write_with_config(w, cfg).unwrap();
+        program.write_with_config(w, cfg)?;
+        Ok(())
     }
 
     pub fn can_export(&self) -> bool {
