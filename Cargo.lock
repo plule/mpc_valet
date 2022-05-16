@@ -960,7 +960,7 @@ dependencies = [
 
 [[package]]
 name = "mpc_valet"
-version = "0.1.4-dev"
+version = "0.1.4"
 dependencies = [
  "anyhow",
  "console_error_panic_hook",
