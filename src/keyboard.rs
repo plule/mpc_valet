@@ -19,8 +19,8 @@ impl Keyboard {
     }
 
     fn draw_key(&self, ui: &mut egui::Ui, key_dimension: &egui::Vec2, note: &MidiNote) {
-        let note = note.into_byte();
-        let color = self.note_colors.get(&note).unwrap_or(&Color32::WHITE);
+        let note_byte = note.into_byte();
+        let color = self.note_colors.get(&note_byte).unwrap_or(&Color32::WHITE);
         let (rect, mut response) = ui.allocate_exact_size(*key_dimension, egui::Sense::click());
         if response.clicked() {
             response.mark_changed();
@@ -32,10 +32,12 @@ impl Keyboard {
             let radius = 0.1 * rect.height();
             ui.painter().rect(rect, radius, *color, visuals.bg_stroke);
         }
+        let mut hover_text = format!("{}{}", note.pitch(), note.octave());
 
-        if let Some(text) = self.note_text.get(&note) {
-            response.on_hover_text(text);
+        if let Some(text) = self.note_text.get(&note_byte) {
+            hover_text = format!("{} ({})", hover_text, text);
         }
+        response.on_hover_text(hover_text);
     }
 }
 
