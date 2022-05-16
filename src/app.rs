@@ -1,14 +1,15 @@
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+
+use crate::keyboard::Keyboard;
 use crate::{KeygroupProgram, KeygroupSettings, Range};
 use anyhow::Context;
 use anyhow::Result;
-use egui::Id;
-use egui::LayerId;
-use egui::Order;
 use egui::Visuals;
 use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
 use music_note::midi::MidiNote;
-use music_note::Pitch;
+use random_color::{Luminosity, RandomColor};
 
 pub struct TemplateApp {
     pub program: KeygroupProgram,
@@ -177,6 +178,7 @@ impl TemplateApp {
                 let mut delete_index = None;
                 let mut guess_ranges = false;
                 for (index, keygroup) in self.program.keygroups.iter_mut().enumerate() {
+                    let color = note_color(&keygroup.file);
                     body.row(20.0, |mut row| {
                         row.col(|ui| {
                             if ui
@@ -189,7 +191,7 @@ impl TemplateApp {
                         row.col(|ui| {
                             let text = keygroup.file.clone();
                             if keygroup.file.ends_with(".wav") || keygroup.file.ends_with(".WAV") {
-                                ui.label(format!("🎵 {}", text));
+                                ui.label(RichText::new(format!("🎵 {}", text)).color(color));
                             } else {
                                 ui.label(format!("⚠ {}", text))
                                     .on_hover_text("Programs should be done from .wav samples.");
@@ -257,90 +259,16 @@ impl TemplateApp {
     }
 
     fn keyboard_ui(&self, ui: &mut egui::Ui) {
-        let key_dimension = egui::vec2(
-            ui.spacing().interact_size.x / 4.0,
-            ui.spacing().interact_size.y,
-        );
-        let keyboard_size = egui::vec2(
-            (key_dimension.x + 1.0) * 70.0,
-            (key_dimension.y + 1.0) * 2.0,
-        );
-        ui.spacing_mut().item_spacing.x = 1.0;
-        ui.allocate_ui(keyboard_size, |ui| {
-            // Black keys
-            ui.horizontal(|ui| {
-                // Half key offset
-                ui.allocate_exact_size(
-                    egui::vec2(key_dimension.x / 2.0, key_dimension.y),
-                    egui::Sense::focusable_noninteractive(),
-                );
+        let mut colors = HashMap::new();
 
-                for note in crate::MIDI_NOTES.iter() {
-                    match note.pitch() {
-                        Pitch::B | Pitch::E => {
-                            // Space between keys
-                            ui.allocate_exact_size(
-                                key_dimension,
-                                egui::Sense::focusable_noninteractive(),
-                            );
-                        }
-                        Pitch::CSharp
-                        | Pitch::DSharp
-                        | Pitch::FSharp
-                        | Pitch::GSharp
-                        | Pitch::ASharp => {
-                            let (rect, mut response) =
-                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
-                            if response.clicked() {
-                                response.mark_changed();
-                            }
-
-                            let visuals = ui.style().interact_selectable(&response, true);
-
-                            if ui.is_rect_visible(rect) {
-                                // All coordinates are in absolute screen coordinates so we use `rect` to place the elements.
-                                let rect = rect.expand(visuals.expansion);
-                                let radius = 0.2 * rect.height();
-                                ui.painter()
-                                    .rect(rect, radius, Color32::BLACK, visuals.bg_stroke);
-                            }
-                        }
-                        _ => {}
-                    }
+        for kg in &self.program.keygroups {
+            if let Some(settings) = &kg.settings {
+                for note in settings.range.low.into_byte()..=settings.range.high.into_byte() {
+                    colors.insert(note, note_color(&kg.file));
                 }
-            });
-
-            // White keys
-            ui.horizontal(|ui| {
-                for note in crate::MIDI_NOTES.iter() {
-                    match note.pitch() {
-                        Pitch::C
-                        | Pitch::D
-                        | Pitch::E
-                        | Pitch::F
-                        | Pitch::G
-                        | Pitch::A
-                        | Pitch::B => {
-                            let (rect, mut response) =
-                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
-                            if response.clicked() {
-                                response.mark_changed();
-                            }
-
-                            let visuals = ui.style().interact_selectable(&response, true);
-
-                            if ui.is_rect_visible(rect) {
-                                let rect = rect.expand(visuals.expansion);
-                                let radius = 0.05 * rect.height();
-                                ui.painter()
-                                    .rect(rect, radius, Color32::WHITE, visuals.bg_stroke);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            });
-        });
+            }
+        }
+        ui.add(Keyboard::new(colors));
     }
 
     fn footer_ui(&mut self, ui: &mut egui::Ui) {
@@ -469,4 +397,14 @@ fn preview_files_being_dropped(ctx: &egui::Context) {
             Color32::WHITE,
         );
     }
+}
+
+fn note_color(sample: &str) -> Color32 {
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    sample.hash(&mut hasher);
+    let color = RandomColor::new()
+        .seed(hasher.finish())
+        .luminosity(Luminosity::Light)
+        .to_rgb_array();
+    Color32::from_rgb(color[0], color[1], color[2])
 }

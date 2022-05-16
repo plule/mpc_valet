@@ -2,6 +2,7 @@
 
 mod app;
 pub mod export;
+pub mod keyboard;
 pub mod parse;
 pub mod range;
 use anyhow::Result;
