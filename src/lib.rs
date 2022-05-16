@@ -11,6 +11,7 @@ pub use app::TemplateApp;
 
 #[cfg(target_arch = "wasm32")]
 use eframe::wasm_bindgen::{self, prelude::*};
+use lazy_static::lazy_static;
 use music_note::{
     midi::{MidiNote, Octave},
     Pitch,
@@ -60,6 +61,18 @@ pub const PITCHES: [Pitch; 12] = [
     Pitch::ASharp,
     Pitch::B,
 ];
+
+lazy_static! {
+    static ref MIDI_NOTES: Vec<MidiNote> = {
+        let mut notes = Vec::new();
+        for octave in OCTAVES {
+            for pitch in PITCHES {
+                notes.push(MidiNote::new(pitch, octave));
+            }
+        }
+        notes
+    };
+}
 
 #[derive(Debug)]
 pub struct KeygroupProgram {

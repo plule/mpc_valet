@@ -1,9 +1,14 @@
 use crate::{KeygroupProgram, KeygroupSettings, Range};
 use anyhow::Context;
 use anyhow::Result;
+use egui::Id;
+use egui::LayerId;
+use egui::Order;
+use egui::Visuals;
 use egui::{Color32, FontId, Layout, RichText, TextStyle, Vec2};
 use egui_extras::{Size, TableBuilder};
 use music_note::midi::MidiNote;
+use music_note::Pitch;
 
 pub struct TemplateApp {
     pub program: KeygroupProgram,
@@ -37,6 +42,8 @@ impl TemplateApp {
         header_ui(ui);
         ui.separator();
         self.samples_area_ui(ui);
+        ui.separator();
+        self.keyboard_ui(ui);
         ui.separator();
         self.save_ui(ui);
         instructions_ui(ui);
@@ -249,6 +256,93 @@ impl TemplateApp {
             });
     }
 
+    fn keyboard_ui(&self, ui: &mut egui::Ui) {
+        let key_dimension = egui::vec2(
+            ui.spacing().interact_size.x / 4.0,
+            ui.spacing().interact_size.y,
+        );
+        let keyboard_size = egui::vec2(
+            (key_dimension.x + 1.0) * 70.0,
+            (key_dimension.y + 1.0) * 2.0,
+        );
+        ui.spacing_mut().item_spacing.x = 1.0;
+        ui.allocate_ui(keyboard_size, |ui| {
+            // Black keys
+            ui.horizontal(|ui| {
+                // Half key offset
+                ui.allocate_exact_size(
+                    egui::vec2(key_dimension.x / 2.0, key_dimension.y),
+                    egui::Sense::focusable_noninteractive(),
+                );
+
+                for note in crate::MIDI_NOTES.iter() {
+                    match note.pitch() {
+                        Pitch::B | Pitch::E => {
+                            // Space between keys
+                            ui.allocate_exact_size(
+                                key_dimension,
+                                egui::Sense::focusable_noninteractive(),
+                            );
+                        }
+                        Pitch::CSharp
+                        | Pitch::DSharp
+                        | Pitch::FSharp
+                        | Pitch::GSharp
+                        | Pitch::ASharp => {
+                            let (rect, mut response) =
+                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
+                            if response.clicked() {
+                                response.mark_changed();
+                            }
+
+                            let visuals = ui.style().interact_selectable(&response, true);
+
+                            if ui.is_rect_visible(rect) {
+                                // All coordinates are in absolute screen coordinates so we use `rect` to place the elements.
+                                let rect = rect.expand(visuals.expansion);
+                                let radius = 0.2 * rect.height();
+                                ui.painter()
+                                    .rect(rect, radius, Color32::BLACK, visuals.bg_stroke);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            });
+
+            // White keys
+            ui.horizontal(|ui| {
+                for note in crate::MIDI_NOTES.iter() {
+                    match note.pitch() {
+                        Pitch::C
+                        | Pitch::D
+                        | Pitch::E
+                        | Pitch::F
+                        | Pitch::G
+                        | Pitch::A
+                        | Pitch::B => {
+                            let (rect, mut response) =
+                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
+                            if response.clicked() {
+                                response.mark_changed();
+                            }
+
+                            let visuals = ui.style().interact_selectable(&response, true);
+
+                            if ui.is_rect_visible(rect) {
+                                let rect = rect.expand(visuals.expansion);
+                                let radius = 0.05 * rect.height();
+                                ui.painter()
+                                    .rect(rect, radius, Color32::WHITE, visuals.bg_stroke);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            });
+        });
+    }
+
     fn footer_ui(&mut self, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
             let width = ui
@@ -301,6 +395,7 @@ impl eframe::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        ctx.set_visuals(Visuals::dark());
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical_centered(|ui| {
                 ui.allocate_ui_with_layout(
