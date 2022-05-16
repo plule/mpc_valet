@@ -31,7 +31,7 @@ jobs:
     - name: Wasm bindgen
       run: wasm-bindgen --out-dir ./docs/ --no-modules --no-typescript ./target/wasm32-unknown-unknown/release/mpc_valet.wasm
     - name: Deploy
-      if: github.ref == 'refs/heads/main'
+      if: startsWith(github.ref, 'refs/tags/v')
       uses: JamesIves/github-pages-deploy-action@v4.3.0
       with:
         branch: gh-pages
