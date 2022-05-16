@@ -265,7 +265,11 @@ impl TemplateApp {
         for kg in &self.program.keygroups {
             if let Some(settings) = &kg.settings {
                 for note in settings.range.low.into_byte()..=settings.range.high.into_byte() {
-                    colors.insert(note, note_color(&kg.file));
+                    let mut color = note_color(&kg.file);
+                    if note != settings.root.into_byte() {
+                        color = color.linear_multiply(0.5);
+                    }
+                    colors.insert(note, color);
                     texts.insert(note, kg.file.clone());
                 }
             }
