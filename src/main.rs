@@ -13,3 +13,8 @@ fn main() {
         Box::new(|cc| Box::new(mpc_valet::TemplateApp::new(cc))),
     );
 }
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    // Unused
+}
