@@ -32,12 +32,13 @@ jobs:
         toolchain: stable
         target: ${{ matrix.target }}
         override: true
-    - uses: actions-rs/cargo@v1
+    - name: Compile
+      id: compile
+      uses: rust-build/rust-build.action@v1.3.2
       with:
-        use-cross: true
-        command: build
-        args: --target ${{ matrix.target }}
-  
+        RUSTTARGET: ${{ matrix.target }}
+        UPLOAD_MODE: none
+
   test:
     name: test
     runs-on: ubuntu-latest
