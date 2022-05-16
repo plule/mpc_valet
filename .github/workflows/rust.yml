@@ -33,9 +33,14 @@ jobs:
       run: cargo build --release --lib --target wasm32-unknown-unknown
     - name: Wasm bindgen
       run: wasm-bindgen --out-dir ./docs/ --no-modules --no-typescript ./target/wasm32-unknown-unknown/release/mpc_valet.wasm
-    - name: Deploy
+    - name: Deploy to github pages
       if: startsWith(github.ref, 'refs/tags/v')
       uses: JamesIves/github-pages-deploy-action@v4.3.0
       with:
         branch: gh-pages
         folder: docs
+    - name: Publish crate
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: cargo publish
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
