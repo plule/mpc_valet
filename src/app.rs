@@ -14,6 +14,8 @@ use random_color::{Luminosity, RandomColor};
 pub struct TemplateApp {
     pub program: KeygroupProgram,
 
+    pub pitch_preference: f32,
+
     pub last_error: Result<()>,
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -24,6 +26,7 @@ impl Default for TemplateApp {
     fn default() -> Self {
         Self {
             program: Default::default(),
+            pitch_preference: 0.5,
             last_error: Ok(()),
             #[cfg(not(target_arch = "wasm32"))]
             sample_dir: Default::default(),
@@ -151,6 +154,20 @@ impl TemplateApp {
             });
         } else {
             self.samples_table(ui);
+            ui.horizontal(|ui| {
+                ui.label("pitch down");
+                if ui
+                    .add(
+                        egui::Slider::new(&mut self.pitch_preference, 0.0..=1.0)
+                            .clamp_to_range(true)
+                            .show_value(false),
+                    )
+                    .changed()
+                {
+                    self.program.guess_ranges(self.pitch_preference);
+                }
+                ui.label("pitch up");
+            });
         }
     }
 
@@ -249,11 +266,11 @@ impl TemplateApp {
                 if let Some(delete_index) = delete_index {
                     self.program.keygroups.remove(delete_index);
                     self.program.guess_roots();
-                    self.program.guess_ranges();
+                    self.program.guess_ranges(self.pitch_preference);
                 }
 
                 if guess_ranges {
-                    self.program.guess_ranges();
+                    self.program.guess_ranges(self.pitch_preference);
                 }
             });
     }
@@ -370,7 +387,7 @@ impl eframe::App for TemplateApp {
                 .collect();
             self.program.add_files(filenames);
             self.program.guess_roots();
-            self.program.guess_ranges();
+            self.program.guess_ranges(self.pitch_preference);
         }
     }
 }

@@ -106,7 +106,7 @@ impl KeygroupProgram {
         }
     }
 
-    pub fn guess_ranges(&mut self) {
+    pub fn guess_ranges(&mut self, pitch_preference: f32) {
         self.keygroups.sort_by(|a, b| a.settings.cmp(&b.settings));
         let kg_settings: Vec<&mut KeygroupSettings> = self
             .keygroups
@@ -114,7 +114,7 @@ impl KeygroupProgram {
             .filter_map(|kg| kg.settings.as_mut())
             .collect();
         let roots: Vec<MidiNote> = kg_settings.iter().map(|kg| kg.root).collect();
-        let ranges = range::build_ranges(&roots);
+        let ranges = range::build_ranges(&roots, pitch_preference);
         for (kg, range) in kg_settings.into_iter().zip(ranges.into_iter()) {
             kg.range = range;
         }
