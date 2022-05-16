@@ -260,15 +260,17 @@ impl TemplateApp {
 
     fn keyboard_ui(&self, ui: &mut egui::Ui) {
         let mut colors = HashMap::new();
+        let mut texts = HashMap::new();
 
         for kg in &self.program.keygroups {
             if let Some(settings) = &kg.settings {
                 for note in settings.range.low.into_byte()..=settings.range.high.into_byte() {
                     colors.insert(note, note_color(&kg.file));
+                    texts.insert(note, kg.file.clone());
                 }
             }
         }
-        ui.add(Keyboard::new(colors));
+        ui.add(Keyboard::new(colors, texts));
     }
 
     fn footer_ui(&mut self, ui: &mut egui::Ui) {

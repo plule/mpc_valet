@@ -1,18 +1,41 @@
 use std::collections::HashMap;
 
 use egui::{Color32, Widget};
-use music_note::Pitch;
+use music_note::{midi::MidiNote, Pitch};
 
 pub struct Keyboard {
-    /// List of keys.
-    ///
-    /// Should contain all the notes
+    /// Color of each note
     pub note_colors: HashMap<u8, Color32>,
+
+    pub note_text: HashMap<u8, String>,
 }
 
 impl Keyboard {
-    pub fn new(note_colors: HashMap<u8, Color32>) -> Self {
-        Self { note_colors }
+    pub fn new(note_colors: HashMap<u8, Color32>, note_text: HashMap<u8, String>) -> Self {
+        Self {
+            note_colors,
+            note_text,
+        }
+    }
+
+    fn draw_key(&self, ui: &mut egui::Ui, key_dimension: &egui::Vec2, note: &MidiNote) {
+        let note = note.into_byte();
+        let color = self.note_colors.get(&note).unwrap_or(&Color32::WHITE);
+        let (rect, mut response) = ui.allocate_exact_size(*key_dimension, egui::Sense::click());
+        if response.clicked() {
+            response.mark_changed();
+        }
+        let visuals = ui.style().interact_selectable(&response, true);
+        if ui.is_rect_visible(rect) {
+            // All coordinates are in absolute screen coordinates so we use `rect` to place the elements.
+            let rect = rect.expand(visuals.expansion);
+            let radius = 0.1 * rect.height();
+            ui.painter().rect(rect, radius, *color, visuals.bg_stroke);
+        }
+
+        if let Some(text) = self.note_text.get(&note) {
+            response.on_hover_text(text);
+        }
     }
 }
 
@@ -37,10 +60,6 @@ impl Widget for Keyboard {
                 );
 
                 for note in crate::MIDI_NOTES.iter() {
-                    let color = self
-                        .note_colors
-                        .get(&note.into_byte())
-                        .unwrap_or(&Color32::BLACK);
                     match note.pitch() {
                         Pitch::B | Pitch::E => {
                             // Space between keys
@@ -54,20 +73,7 @@ impl Widget for Keyboard {
                         | Pitch::FSharp
                         | Pitch::GSharp
                         | Pitch::ASharp => {
-                            let (rect, mut response) =
-                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
-                            if response.clicked() {
-                                response.mark_changed();
-                            }
-
-                            let visuals = ui.style().interact_selectable(&response, true);
-
-                            if ui.is_rect_visible(rect) {
-                                // All coordinates are in absolute screen coordinates so we use `rect` to place the elements.
-                                let rect = rect.expand(visuals.expansion);
-                                let radius = 0.1 * rect.height();
-                                ui.painter().rect(rect, radius, *color, visuals.bg_stroke);
-                            }
+                            self.draw_key(ui, &key_dimension, &note);
                         }
                         _ => {}
                     }
@@ -77,10 +83,6 @@ impl Widget for Keyboard {
             // White keys
             ui.horizontal(|ui| {
                 for note in crate::MIDI_NOTES.iter() {
-                    let color = self
-                        .note_colors
-                        .get(&note.into_byte())
-                        .unwrap_or(&Color32::WHITE);
                     match note.pitch() {
                         Pitch::C
                         | Pitch::D
@@ -89,19 +91,7 @@ impl Widget for Keyboard {
                         | Pitch::G
                         | Pitch::A
                         | Pitch::B => {
-                            let (rect, mut response) =
-                                ui.allocate_exact_size(key_dimension, egui::Sense::click());
-                            if response.clicked() {
-                                response.mark_changed();
-                            }
-
-                            let visuals = ui.style().interact_selectable(&response, true);
-
-                            if ui.is_rect_visible(rect) {
-                                let rect = rect.expand(visuals.expansion);
-                                let radius = 0.1 * rect.height();
-                                ui.painter().rect(rect, radius, *color, visuals.bg_stroke);
-                            }
+                            self.draw_key(ui, &key_dimension, &note);
                         }
                         _ => {}
                     }
