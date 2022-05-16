@@ -153,7 +153,10 @@ impl TemplateApp {
                 );
             });
         } else {
-            self.samples_table(ui);
+            ui.vertical(|ui| {
+                ui.set_max_height(ui.available_height() / 2.0);
+                self.samples_table(ui);
+            });
             ui.horizontal(|ui| {
                 ui.label("pitch down");
                 if ui
