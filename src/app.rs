@@ -369,7 +369,7 @@ impl eframe::App for TemplateApp {
             #[cfg(not(target_arch = "wasm32"))]
             if let Some(path) = &ctx.input().raw.dropped_files[0].path {
                 if let Some(dir) = path.parent() {
-                    self.sample_dir = dir.clone().to_path_buf();
+                    self.sample_dir = dir.to_path_buf();
                 }
             }
             let filenames: Vec<String> = ctx
@@ -385,7 +385,7 @@ impl eframe::App for TemplateApp {
                             }
                         }
                     }
-                    return drop.name.to_string();
+                    drop.name.to_string()
                 })
                 .collect();
             self.program.add_files(filenames);

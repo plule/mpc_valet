@@ -75,7 +75,7 @@ impl Widget for Keyboard {
                         | Pitch::FSharp
                         | Pitch::GSharp
                         | Pitch::ASharp => {
-                            self.draw_key(ui, &key_dimension, &note);
+                            self.draw_key(ui, &key_dimension, note);
                         }
                         _ => {}
                     }
@@ -93,7 +93,7 @@ impl Widget for Keyboard {
                         | Pitch::G
                         | Pitch::A
                         | Pitch::B => {
-                            self.draw_key(ui, &key_dimension, &note);
+                            self.draw_key(ui, &key_dimension, note);
                         }
                         _ => {}
                     }

@@ -9,10 +9,10 @@ trait SetChildText {
 
 impl SetChildText for Element {
     fn set_child_text(&mut self, child: &str, text: String) -> Result<()> {
-        Ok(self
-            .get_mut_child(child)
+        self.get_mut_child(child)
             .context(format!("No child named {}", child))?
-            .set_text(text))
+            .set_text(text);
+        Ok(())
     }
 }
 
@@ -48,9 +48,10 @@ where
         .context("Failed to get the XPM reference instrument")?;
 
     let mut num_keygroups = 0;
-    for (sample_file, settings) in keygroups.into_iter().filter_map(|kg| match &kg.settings {
-        Some(settings) => Some((kg.file.to_string(), settings.clone())),
-        None => None,
+    for (sample_file, settings) in keygroups.into_iter().filter_map(|kg| {
+        kg.settings
+            .as_ref()
+            .map(|settings| (kg.file.to_string(), settings.clone()))
     }) {
         num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
