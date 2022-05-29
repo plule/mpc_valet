@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-use crate::keyboard::Keyboard;
+use crate::widgets::Keyboard;
 use crate::{KeygroupProgram, KeygroupSettings, Range};
 use anyhow::Context;
 use anyhow::Result;

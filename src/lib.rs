@@ -2,9 +2,9 @@
 
 mod app;
 pub mod export;
-pub mod keyboard;
 pub mod parse;
 pub mod range;
+pub mod widgets;
 use anyhow::Result;
 use std::io::Write;
 
