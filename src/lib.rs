@@ -6,7 +6,12 @@ pub mod parse;
 pub mod range;
 pub mod widgets;
 use anyhow::Result;
-use std::io::Write;
+use egui::Color32;
+use random_color::{Luminosity, RandomColor};
+use std::{
+    hash::{Hash, Hasher},
+    io::Write,
+};
 
 pub use app::TemplateApp;
 
@@ -153,6 +158,16 @@ impl Keygroup {
             file,
             settings: None,
         }
+    }
+
+    pub fn color(&self) -> Color32 {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        self.file.hash(&mut hasher);
+        let color = RandomColor::new()
+            .seed(hasher.finish())
+            .luminosity(Luminosity::Light)
+            .to_rgb_array();
+        Color32::from_rgb(color[0], color[1], color[2])
     }
 }
 
