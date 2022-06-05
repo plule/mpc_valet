@@ -4,7 +4,7 @@ use crate::widgets::Keyboard;
 use crate::KeygroupProgram;
 use anyhow::Result;
 use egui::Visuals;
-use egui::{FontId, Layout, RichText, Vec2};
+use egui::{Layout, Vec2};
 
 pub struct TemplateApp {
     pub program: KeygroupProgram,
@@ -35,21 +35,6 @@ impl TemplateApp {
         // This is also where you can customized the look at feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
         Default::default()
-    }
-
-    fn main_ui(&mut self, ui: &mut egui::Ui) {
-        ui.add(crate::widgets::Header::default());
-        ui.separator();
-        ui.add(crate::widgets::SamplesArea::new(
-            &mut self.program,
-            &mut self.pitch_preference,
-        ));
-        ui.separator();
-        self.keyboard_ui(ui);
-        ui.separator();
-        self.save_ui(ui);
-        ui.add(crate::widgets::Instructions::default());
-        ui.add(crate::widgets::Footer::new(&self.last_error));
     }
 
     fn save_ui(&mut self, ui: &mut egui::Ui) {
@@ -101,7 +86,18 @@ impl eframe::App for TemplateApp {
                     Vec2::from([512.0, ui.available_height()]),
                     Layout::top_down(egui::Align::Center),
                     |ui| {
-                        self.main_ui(ui);
+                        ui.add(crate::widgets::Header::default());
+                        ui.separator();
+                        ui.add(crate::widgets::SamplesArea::new(
+                            &mut self.program,
+                            &mut self.pitch_preference,
+                        ));
+                        ui.separator();
+                        self.keyboard_ui(ui);
+                        ui.separator();
+                        self.save_ui(ui);
+                        ui.add(crate::widgets::Instructions::default());
+                        ui.add(crate::widgets::Footer::new(&self.last_error));
                     },
                 );
             });
