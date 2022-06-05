@@ -157,20 +157,12 @@ impl TemplateApp {
                 ui.set_max_height(ui.available_height() / 2.0);
                 self.samples_table(ui);
             });
-            ui.horizontal(|ui| {
-                ui.label("pitch down");
-                if ui
-                    .add(
-                        egui::Slider::new(&mut self.pitch_preference, 0.0..=1.0)
-                            .clamp_to_range(true)
-                            .show_value(false),
-                    )
-                    .changed()
-                {
-                    self.program.guess_ranges(self.pitch_preference);
-                }
-                ui.label("pitch up");
-            });
+            if ui
+                .add(crate::widgets::PitchSlider::new(&mut self.pitch_preference))
+                .changed()
+            {
+                self.program.guess_ranges(self.pitch_preference);
+            }
         }
     }
 
