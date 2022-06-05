@@ -137,9 +137,52 @@ impl KeygroupProgram {
     pub fn can_export(&self) -> bool {
         self.keygroups.iter().any(|kg| kg.settings.is_some())
     }
+
+    pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
+        let mut guess_roots = false;
+        let mut guess_ranges = false;
+        if keygroups.len() != self.keygroups.len() {
+            guess_roots = true;
+            guess_ranges = true;
+        } else {
+            for (kg, other_kg) in self.keygroups.iter().zip(keygroups.iter()) {
+                if kg.file != other_kg.file {
+                    guess_roots = true;
+                }
+
+                match &other_kg.settings {
+                    Some(other_settings) => match &kg.settings {
+                        Some(settings) => {
+                            if other_settings.root != settings.root {
+                                guess_ranges = true;
+                            }
+                        }
+                        None => {
+                            guess_ranges = true;
+                            guess_roots = true;
+                        }
+                    },
+                    None => {
+                        guess_ranges = true;
+                        guess_roots = true;
+                    }
+                }
+            }
+        }
+
+        self.keygroups = keygroups;
+
+        if guess_roots {
+            self.guess_roots();
+        }
+
+        if guess_ranges {
+            self.guess_ranges(pitch_preference);
+        }
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Keygroup {
     pub file: String,
     pub settings: Option<KeygroupSettings>,

@@ -1,15 +1,11 @@
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
 
 use crate::widgets::Keyboard;
-use crate::{KeygroupProgram, KeygroupSettings, Range};
+use crate::KeygroupProgram;
 use anyhow::Context;
 use anyhow::Result;
 use egui::Visuals;
-use egui::{Color32, FontId, Layout, RichText, Vec2};
-use egui_extras::{Size, TableBuilder};
-use music_note::midi::MidiNote;
-use random_color::{Luminosity, RandomColor};
+use egui::{FontId, Layout, RichText, Vec2};
 
 pub struct TemplateApp {
     pub program: KeygroupProgram,
@@ -155,7 +151,13 @@ impl TemplateApp {
         } else {
             ui.vertical(|ui| {
                 ui.set_max_height(ui.available_height() / 2.0);
-                self.samples_table(ui);
+                let mut keygroups = self.program.keygroups.clone();
+                if ui
+                    .add(crate::widgets::SamplesTable::new(&mut keygroups))
+                    .changed()
+                {
+                    self.program.update(keygroups, self.pitch_preference);
+                }
             });
             if ui
                 .add(crate::widgets::PitchSlider::new(&mut self.pitch_preference))
@@ -166,110 +168,6 @@ impl TemplateApp {
         }
     }
 
-    fn samples_table(&mut self, ui: &mut egui::Ui) {
-        TableBuilder::new(ui)
-            .striped(true)
-            .cell_layout(egui::Layout::left_to_right().with_cross_align(egui::Align::Center))
-            .column(Size::remainder())
-            .column(Size::relative(0.30)) // sample
-            .column(Size::relative(0.20)) // Root Note
-            .column(Size::relative(0.40)) // Range // delete
-            .header(20.0, |mut header| {
-                header.col(|_| {});
-                header.col(|ui| {
-                    ui.heading("Sample");
-                });
-                header.col(|ui| {
-                    ui.heading("Root Note");
-                });
-                header.col(|ui| {
-                    ui.heading("Range");
-                });
-            })
-            .body(|mut body| {
-                let mut delete_index = None;
-                let mut guess_ranges = false;
-                for (index, keygroup) in self.program.keygroups.iter_mut().enumerate() {
-                    let color = note_color(&keygroup.file);
-                    body.row(20.0, |mut row| {
-                        row.col(|ui| {
-                            if ui
-                                .button(RichText::new("❌").color(Color32::GRAY))
-                                .clicked()
-                            {
-                                delete_index = Some(index);
-                            }
-                        });
-                        row.col(|ui| {
-                            let text = keygroup.file.clone();
-                            if keygroup.file.ends_with(".wav") || keygroup.file.ends_with(".WAV") {
-                                ui.label(RichText::new(format!("🎵 {}", text)).color(color));
-                            } else {
-                                ui.label(format!("⚠ {}", text))
-                                    .on_hover_text("Programs should be done from .wav samples.");
-                            }
-                        });
-                        row.col(|ui| {
-                            let text = match &keygroup.settings {
-                                Some(settings) => {
-                                    format!(
-                                        "🎵 {}{}",
-                                        settings.root.pitch(),
-                                        settings.root.octave(),
-                                    )
-                                }
-                                None => "⚠ ???".to_string(),
-                            };
-
-                            ui.menu_button(text, |ui| {
-                                for octave in crate::OCTAVES {
-                                    ui.menu_button(format!("Octave {}", octave), |ui| {
-                                        for pitch in crate::PITCHES {
-                                            if ui.button(format!("{}{}", pitch, octave)).clicked() {
-                                                let root = MidiNote::new(pitch, octave);
-                                                keygroup.settings = Some(KeygroupSettings::new(
-                                                    root,
-                                                    Range::default(),
-                                                ));
-                                                guess_ranges = true;
-                                                ui.close_menu();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                        });
-                        row.col(|ui| match &keygroup.settings {
-                            Some(settings) => {
-                                ui.label(format!(
-                                    "{}{} to {}{}",
-                                    settings.range.low.pitch(),
-                                    settings.range.low.octave(),
-                                    settings.range.high.pitch(),
-                                    settings.range.high.octave(),
-                                ));
-                            }
-                            None => {
-                                ui.label("⚠ ???").on_hover_text(
-                                    "Unknown root note. This sample will be ignored.",
-                                );
-                            }
-                        });
-                    });
-                }
-
-                if let Some(delete_index) = delete_index {
-                    self.program.keygroups.remove(delete_index);
-                    self.program.guess_roots();
-                    self.program.guess_ranges(self.pitch_preference);
-                }
-
-                if guess_ranges {
-                    self.program.guess_ranges(self.pitch_preference);
-                }
-            });
-    }
-
     fn keyboard_ui(&self, ui: &mut egui::Ui) {
         let mut colors = HashMap::new();
         let mut texts = HashMap::new();
@@ -277,7 +175,7 @@ impl TemplateApp {
         for kg in &self.program.keygroups {
             if let Some(settings) = &kg.settings {
                 for note in settings.range.low.into_byte()..=settings.range.high.into_byte() {
-                    let mut color = note_color(&kg.file);
+                    let mut color = kg.color();
                     if note != settings.root.into_byte() {
                         color = color.linear_multiply(0.5);
                     }
@@ -368,14 +266,4 @@ fn preview_files_being_dropped(ctx: &egui::Context) {
             Color32::WHITE,
         );
     }
-}
-
-fn note_color(sample: &str) -> Color32 {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    sample.hash(&mut hasher);
-    let color = RandomColor::new()
-        .seed(hasher.finish())
-        .luminosity(Luminosity::Light)
-        .to_rgb_array();
-    Color32::from_rgb(color[0], color[1], color[2])
 }
