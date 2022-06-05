@@ -40,7 +40,10 @@ impl TemplateApp {
     fn main_ui(&mut self, ui: &mut egui::Ui) {
         ui.add(crate::widgets::Header::default());
         ui.separator();
-        self.samples_area_ui(ui);
+        ui.add(crate::widgets::SamplesArea::new(
+            &mut self.program,
+            &mut self.pitch_preference,
+        ));
         ui.separator();
         self.keyboard_ui(ui);
         ui.separator();
@@ -65,34 +68,6 @@ impl TemplateApp {
                 ui.add(save_button);
             });
         });
-    }
-
-    fn samples_area_ui(&mut self, ui: &mut egui::Ui) {
-        if self.program.keygroups.is_empty() {
-            ui.vertical_centered(|ui| {
-                ui.label(
-                    RichText::new("⮊ Drag-and-drop you samples here! ⮈")
-                        .font(FontId::proportional(20.0)),
-                );
-            });
-        } else {
-            ui.vertical(|ui| {
-                ui.set_max_height(ui.available_height() / 2.0);
-                let mut keygroups = self.program.keygroups.clone();
-                if ui
-                    .add(crate::widgets::SamplesTable::new(&mut keygroups))
-                    .changed()
-                {
-                    self.program.update(keygroups, self.pitch_preference);
-                }
-            });
-            if ui
-                .add(crate::widgets::PitchSlider::new(&mut self.pitch_preference))
-                .changed()
-            {
-                self.program.guess_ranges(self.pitch_preference);
-            }
-        }
     }
 
     fn keyboard_ui(&self, ui: &mut egui::Ui) {
