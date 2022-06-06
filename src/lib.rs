@@ -101,16 +101,6 @@ impl KeygroupProgram {
             .extend(files.into_iter().map(Keygroup::from_file));
     }
 
-    pub fn guess_roots(&mut self) {
-        let filenames: Vec<&str> = self.keygroups.iter().map(|kg| kg.file.as_str()).collect();
-        let roots = parse::find_best_candidate(filenames.clone());
-        for (kg, root) in self.keygroups.iter_mut().zip(roots.into_iter()) {
-            if let Some(root) = root {
-                kg.root = Some(root);
-            }
-        }
-    }
-
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
         self.keygroups.sort_by(|a, b| a.root.cmp(&b.root));
         let kg_with_root: Vec<&mut Keygroup> = self
@@ -143,30 +133,19 @@ impl KeygroupProgram {
     }
 
     pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
-        let mut guess_roots = false;
         let mut guess_ranges = false;
         if keygroups.len() != self.keygroups.len() {
-            guess_roots = true;
             guess_ranges = true;
         } else {
             for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                if kg.file != new_kg.file || new_kg.root.is_none() {
-                    guess_roots = true;
+                if kg.file != new_kg.file || kg.root != new_kg.root {
                     guess_ranges = true;
                     break;
-                }
-
-                if kg.root != new_kg.root {
-                    guess_ranges = true;
                 }
             }
         }
 
         self.keygroups = keygroups;
-
-        if guess_roots {
-            self.guess_roots();
-        }
 
         if guess_ranges {
             self.guess_ranges(pitch_preference);
@@ -191,11 +170,16 @@ impl Keygroup {
     }
 
     pub fn from_file(file: String) -> Self {
+        let root = parse::parse_note(&file);
         Self {
             file,
-            root: None,
+            root,
             range: None,
         }
+    }
+
+    pub fn guess_root(&mut self) {
+        self.root = parse::parse_note(&self.file);
     }
 
     pub fn color(&self) -> Color32 {

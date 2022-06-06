@@ -134,7 +134,6 @@ impl eframe::App for TemplateApp {
                 })
                 .collect();
             self.program.add_files(filenames);
-            self.program.guess_roots();
             self.program.guess_ranges(self.pitch_preference);
         }
     }
