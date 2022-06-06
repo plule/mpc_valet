@@ -48,16 +48,13 @@ where
         .context("Failed to get the XPM reference instrument")?;
 
     let mut num_keygroups = 0;
-    for (sample_file, settings) in keygroups.into_iter().filter_map(|kg| {
-        kg.settings
-            .as_ref()
-            .map(|settings| (kg.file.to_string(), settings.clone()))
-    }) {
+    for (sample_file, root, range) in keygroups
+        .into_iter()
+        .filter_map(|kg| Some((kg.file.clone(), kg.root?, kg.range.as_ref()?)))
+    {
         num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
         let keygroup_number = num_keygroups;
-        let range = settings.range;
-        let root = settings.root;
         let low_note = range.low.into_byte() as u32;
         let high_note = range.high.into_byte() as u32;
         let root_note = (root.into_byte() as u32) + 1; // off by one in the file format

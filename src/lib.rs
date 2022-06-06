@@ -106,22 +106,24 @@ impl KeygroupProgram {
         let roots = parse::find_best_candidate(filenames.clone());
         for (kg, root) in self.keygroups.iter_mut().zip(roots.into_iter()) {
             if let Some(root) = root {
-                kg.settings = Some(KeygroupSettings::new(root, Range::default()));
+                kg.root = Some(root);
             }
         }
     }
 
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
-        self.keygroups.sort_by(|a, b| a.settings.cmp(&b.settings));
-        let kg_settings: Vec<&mut KeygroupSettings> = self
+        self.keygroups.sort_by(|a, b| a.root.cmp(&b.root));
+        let kg_with_root: Vec<&mut Keygroup> = self
             .keygroups
             .iter_mut()
-            .filter_map(|kg| kg.settings.as_mut())
+            .filter(|kg| kg.root.is_some())
             .collect();
-        let roots: Vec<MidiNote> = kg_settings.iter().map(|kg| kg.root).collect();
+
+        let roots: Vec<MidiNote> = kg_with_root.iter().map(|kg| kg.root.unwrap()).collect();
         let ranges = range::build_ranges(&roots, pitch_preference);
-        for (kg, range) in kg_settings.into_iter().zip(ranges.into_iter()) {
-            kg.range = range;
+
+        for (kg, range) in kg_with_root.into_iter().zip(ranges.into_iter()) {
+            kg.range = Some(range);
         }
     }
 
@@ -135,7 +137,9 @@ impl KeygroupProgram {
     }
 
     pub fn can_export(&self) -> bool {
-        self.keygroups.iter().any(|kg| kg.settings.is_some())
+        self.keygroups
+            .iter()
+            .all(|kg| kg.root.is_some() && kg.range.is_some())
     }
 
     pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
@@ -145,27 +149,15 @@ impl KeygroupProgram {
             guess_roots = true;
             guess_ranges = true;
         } else {
-            for (kg, other_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                if kg.file != other_kg.file {
+            for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
+                if kg.file != new_kg.file || new_kg.root.is_none() {
                     guess_roots = true;
+                    guess_ranges = true;
+                    break;
                 }
 
-                match &other_kg.settings {
-                    Some(other_settings) => match &kg.settings {
-                        Some(settings) => {
-                            if other_settings.root != settings.root {
-                                guess_ranges = true;
-                            }
-                        }
-                        None => {
-                            guess_ranges = true;
-                            guess_roots = true;
-                        }
-                    },
-                    None => {
-                        guess_ranges = true;
-                        guess_roots = true;
-                    }
+                if kg.root != new_kg.root {
+                    guess_ranges = true;
                 }
             }
         }
@@ -185,21 +177,24 @@ impl KeygroupProgram {
 #[derive(Debug, Clone)]
 pub struct Keygroup {
     pub file: String,
-    pub settings: Option<KeygroupSettings>,
+    pub root: Option<MidiNote>,
+    pub range: Option<Range>,
 }
 
 impl Keygroup {
     pub fn new(range: Range, root: MidiNote, file: String) -> Self {
         Self {
             file,
-            settings: Some(KeygroupSettings::new(root, range)),
+            root: Some(root),
+            range: Some(range),
         }
     }
 
     pub fn from_file(file: String) -> Self {
         Self {
             file,
-            settings: None,
+            root: None,
+            range: None,
         }
     }
 
@@ -211,32 +206,6 @@ impl Keygroup {
             .luminosity(Luminosity::Light)
             .to_rgb_array();
         Color32::from_rgb(color[0], color[1], color[2])
-    }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct KeygroupSettings {
-    pub root: MidiNote,
-    pub range: Range,
-}
-
-impl Eq for KeygroupSettings {}
-
-impl Ord for KeygroupSettings {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.root.cmp(&other.root)
-    }
-}
-
-impl PartialOrd for KeygroupSettings {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.root.partial_cmp(&other.root)
-    }
-}
-
-impl KeygroupSettings {
-    pub fn new(root: MidiNote, range: Range) -> Self {
-        Self { root, range }
     }
 }
 

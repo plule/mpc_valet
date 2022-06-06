@@ -1,7 +1,7 @@
 use egui::{Color32, RichText, Widget};
 use music_note::midi::MidiNote;
 
-use crate::{Keygroup, KeygroupSettings, Range};
+use crate::Keygroup;
 
 pub struct SamplesTable<'a> {
     pub keygroups: &'a mut Vec<Keygroup>,
@@ -36,17 +36,15 @@ impl<'a> Widget for SamplesTable<'a> {
                             let color = keygroup.color();
 
                             // Range
-                            let r = ui.horizontal(|ui| match &keygroup.settings {
-                                Some(settings) => ui.label(format!(
+                            let r = ui.horizontal(|ui| match &keygroup.range {
+                                Some(range) => ui.label(format!(
                                     "{}{} to {}{}",
-                                    settings.range.low.pitch(),
-                                    settings.range.low.octave(),
-                                    settings.range.high.pitch(),
-                                    settings.range.high.octave(),
+                                    range.low.pitch(),
+                                    range.low.octave(),
+                                    range.high.pitch(),
+                                    range.high.octave(),
                                 )),
-                                None => ui.label("⚠ ???").on_hover_text(
-                                    "Unknown root note. This sample will be ignored.",
-                                ),
+                                None => ui.label("⚠ ???").on_hover_text("Unknown range."),
                             });
                             resp = resp.union(r.response);
 
@@ -63,13 +61,9 @@ impl<'a> Widget for SamplesTable<'a> {
                             resp = resp.union(r);
 
                             // Layer 1 Root Note
-                            let root_note_text = match &keygroup.settings {
-                                Some(settings) => {
-                                    format!(
-                                        "🎵 {}{}",
-                                        settings.root.pitch(),
-                                        settings.root.octave(),
-                                    )
+                            let root_note_text = match &keygroup.root {
+                                Some(root) => {
+                                    format!("🎵 {}{}", root.pitch(), root.octave(),)
                                 }
                                 None => "⚠ ???".to_string(),
                             };
@@ -79,10 +73,7 @@ impl<'a> Widget for SamplesTable<'a> {
                                         for pitch in crate::PITCHES {
                                             if ui.button(format!("{}{}", pitch, octave)).clicked() {
                                                 let root = MidiNote::new(pitch, octave);
-                                                keygroup.settings = Some(KeygroupSettings::new(
-                                                    root,
-                                                    Range::default(),
-                                                ));
+                                                keygroup.root = Some(root);
                                                 resp.mark_changed();
                                                 ui.close_menu();
                                             }

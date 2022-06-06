@@ -59,18 +59,22 @@ impl TemplateApp {
         let mut colors = HashMap::new();
         let mut texts = HashMap::new();
 
-        for kg in &self.program.keygroups {
-            if let Some(settings) = &kg.settings {
-                for note in settings.range.low.into_byte()..=settings.range.high.into_byte() {
-                    let mut color = kg.color();
-                    if note != settings.root.into_byte() {
-                        color = color.linear_multiply(0.5);
-                    }
-                    colors.insert(note, color);
-                    texts.insert(note, kg.file.clone());
+        for (kg, root, range) in self
+            .program
+            .keygroups
+            .iter()
+            .filter_map(|kg| Some((kg, kg.root?, kg.range.as_ref()?)))
+        {
+            for note in range.low.into_byte()..=range.high.into_byte() {
+                let mut color = kg.color();
+                if note != root.into_byte() {
+                    color = color.linear_multiply(0.5);
                 }
+                colors.insert(note, color);
+                texts.insert(note, kg.file.clone());
             }
         }
+
         ui.add(Keyboard::new(colors, texts));
     }
 }
