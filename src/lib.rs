@@ -102,21 +102,24 @@ impl KeygroupProgram {
     }
 
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
-        self.keygroups
-            .sort_by(|a, b| a.layers[0].root.cmp(&b.layers[0].root));
-        let kg_with_root: Vec<&mut Keygroup> = self
+        self.keygroups.sort();
+
+        // keep only the keygroups with root note, and iterate in the root notes
+        let (keygroups_with_root_note, root_notes): (Vec<_>, Vec<_>) = self
             .keygroups
             .iter_mut()
-            .filter(|kg| kg.layers[0].root.is_some())
-            .collect();
+            .filter_map(|kg| {
+                kg.first_assigned_layer()
+                    .and_then(|layer| layer.root)
+                    .map(|root_note| (kg, root_note))
+            })
+            .unzip();
 
-        let roots: Vec<MidiNote> = kg_with_root
-            .iter()
-            .map(|kg| kg.layers[0].root.unwrap())
-            .collect();
-        let ranges = range::build_ranges(&roots, pitch_preference);
+        // guess the ranges from the root notes
+        let ranges = range::build_ranges(&root_notes, pitch_preference);
 
-        for (kg, range) in kg_with_root.into_iter().zip(ranges.into_iter()) {
+        // assign the ranges to the keygroups with root notes
+        for (kg, range) in keygroups_with_root_note.into_iter().zip(ranges.into_iter()) {
             kg.range = Some(range);
         }
     }
@@ -131,9 +134,7 @@ impl KeygroupProgram {
     }
 
     pub fn can_export(&self) -> bool {
-        self.keygroups
-            .iter()
-            .all(|kg| kg.range.is_some() && kg.layers.iter().all(|layer| layer.root.is_some()))
+        self.keygroups.iter().all(|kg| kg.range.is_some())
     }
 
     pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
@@ -142,8 +143,8 @@ impl KeygroupProgram {
             guess_ranges = true;
         } else {
             for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                let first_layer = &kg.layers[0];
-                let new_first_layer = &new_kg.layers[0];
+                let first_layer = kg.first_assigned_layer().unwrap();
+                let new_first_layer = new_kg.first_assigned_layer().unwrap();
                 if first_layer.file != new_first_layer.file
                     || first_layer.root != new_first_layer.root
                 {
@@ -161,14 +162,28 @@ impl KeygroupProgram {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Keygroup {
     pub range: Option<Range>,
-    pub layers: Vec<Layer>,
+    pub layers: [Option<Layer>; 4],
+}
+
+impl PartialOrd for Keygroup {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.first_assigned_layer()
+            .partial_cmp(&other.first_assigned_layer())
+    }
+}
+
+impl Ord for Keygroup {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.first_assigned_layer()
+            .cmp(&other.first_assigned_layer())
+    }
 }
 
 impl Keygroup {
-    pub fn new(range: Range, layers: Vec<Layer>) -> Self {
+    pub fn new(range: Range, layers: [Option<Layer>; 4]) -> Self {
         Self {
             range: Some(range),
             layers,
@@ -178,13 +193,23 @@ impl Keygroup {
     pub fn from_file(file: String) -> Self {
         Self {
             range: None,
-            layers: vec![Layer::from_file(file)],
+            layers: [Some(Layer::from_file(file)), None, None, None],
         }
+    }
+
+    pub fn first_assigned_layer(&self) -> Option<&Layer> {
+        self.layers.iter().find_map(|layer| layer.as_ref())
+    }
+
+    pub fn first_assigned_layer_mut(&mut self) -> Option<&mut Layer> {
+        self.layers.iter_mut().find_map(|layer| layer.as_mut())
     }
 
     pub fn color(&self) -> Color32 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        self.layers[0].file.hash(&mut hasher);
+        let layer = self.first_assigned_layer().cloned().unwrap_or_default();
+
+        layer.file.hash(&mut hasher);
         let color = RandomColor::new()
             .seed(hasher.finish())
             .luminosity(Luminosity::Light)
@@ -193,10 +218,22 @@ impl Keygroup {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Layer {
     pub file: String,
     pub root: Option<MidiNote>,
+}
+
+impl Ord for Layer {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.root.cmp(&other.root)
+    }
+}
+
+impl PartialOrd for Layer {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.root.partial_cmp(&other.root)
+    }
 }
 
 impl Layer {
@@ -217,7 +254,7 @@ impl Layer {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Range {
     pub low: MidiNote,
     pub high: MidiNote,

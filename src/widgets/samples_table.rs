@@ -49,9 +49,10 @@ impl<'a> Widget for SamplesTable<'a> {
                             resp = resp.union(r.response);
 
                             // Layer 1
-                            let sample_text = keygroup.layers[0].file.clone();
-                            let r = if keygroup.layers[0].file.ends_with(".wav")
-                                || keygroup.layers[0].file.ends_with(".WAV")
+                            let layer = keygroup.first_assigned_layer_mut().unwrap();
+                            let sample_text = layer.file.clone();
+                            let r = if sample_text.ends_with(".wav")
+                                || sample_text.ends_with(".WAV")
                             {
                                 ui.label(RichText::new(format!("🎵 {}", sample_text)).color(color))
                             } else {
@@ -61,7 +62,7 @@ impl<'a> Widget for SamplesTable<'a> {
                             resp = resp.union(r);
 
                             // Layer 1 Root Note
-                            let root_note_text = match &keygroup.layers[0].root {
+                            let root_note_text = match &layer.root {
                                 Some(root) => {
                                     format!("🎵 {}{}", root.pitch(), root.octave(),)
                                 }
@@ -73,7 +74,7 @@ impl<'a> Widget for SamplesTable<'a> {
                                         for pitch in crate::PITCHES {
                                             if ui.button(format!("{}{}", pitch, octave)).clicked() {
                                                 let root = MidiNote::new(pitch, octave);
-                                                keygroup.layers[0].root = Some(root);
+                                                layer.root = Some(root);
                                                 resp.mark_changed();
                                                 ui.close_menu();
                                             }

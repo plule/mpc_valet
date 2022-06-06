@@ -59,19 +59,21 @@ impl TemplateApp {
         let mut colors = HashMap::new();
         let mut texts = HashMap::new();
 
-        for (kg, root, range) in self
-            .program
-            .keygroups
-            .iter()
-            .filter_map(|kg| Some((kg, kg.layers[0].root?, kg.range.as_ref()?)))
-        {
+        for (kg, root, range, file) in self.program.keygroups.iter().filter_map(|kg| {
+            Some((
+                kg,
+                kg.first_assigned_layer()?.root?,
+                kg.range.as_ref()?,
+                kg.first_assigned_layer()?.file.clone(),
+            ))
+        }) {
             for note in range.low.into_byte()..=range.high.into_byte() {
                 let mut color = kg.color();
                 if note != root.into_byte() {
                     color = color.linear_multiply(0.5);
                 }
                 colors.insert(note, color);
-                texts.insert(note, kg.layers[0].file.clone());
+                texts.insert(note, file.clone());
             }
         }
 
