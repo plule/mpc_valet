@@ -48,22 +48,17 @@ where
         .context("Failed to get the XPM reference instrument")?;
 
     let mut num_keygroups = 0;
-    for (sample_file, root, range) in keygroups
-        .into_iter()
-        .filter_map(|kg| Some((kg.file.clone(), kg.root?, kg.range.as_ref()?)))
-    {
+    for keygroup in keygroups.into_iter() {
         num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
         let keygroup_number = num_keygroups;
+        let range = keygroup
+            .range
+            .as_ref()
+            .context("Attempted to export a program with missing ranges")?;
+
         let low_note = range.low.into_byte() as u32;
         let high_note = range.high.into_byte() as u32;
-        let root_note = (root.into_byte() as u32) + 1; // off by one in the file format
-        let sample_name = std::path::Path::new(&sample_file)
-            .file_stem()
-            .context("Failed to find the sample base name")?
-            .to_str()
-            .context("The sample does not have a valid base name")?
-            .to_string();
 
         program_keygroup.set_child_text("LowNote", low_note.to_string())?;
         program_keygroup.set_child_text("HighNote", high_note.to_string())?;
@@ -71,15 +66,37 @@ where
             .attributes
             .insert("number".to_string(), keygroup_number.to_string());
 
-        let program_layer = program_keygroup
+        let program_layers = program_keygroup
             .get_mut_child("Layers")
-            .context("Failed to find the XPM reference program layers")?
-            .get_mut_child("Layer")
-            .context("Failed to get the XPM reference program layer")?;
+            .context("Failed to find the XPM reference program layers")?;
 
-        program_layer.set_child_text("RootNote", root_note.to_string())?;
-        program_layer.set_child_text("SampleName", sample_name)?;
-        program_layer.set_child_text("SampleFile", sample_file)?;
+        for (layer, program_layer) in keygroup.layers.iter().zip(
+            program_layers
+                .children
+                .iter_mut()
+                .filter_map(|c| match c {
+                    XMLNode::Element(e) => Some(e),
+                    _ => None,
+                })
+                .filter(|e| e.name == "Layer"),
+        ) {
+            let sample_file = layer.file.clone();
+            let root_note = (layer
+                .root
+                .context("A layer is missing its root note.")?
+                .into_byte() as u32)
+                + 1; // off by one in the file format
+            let sample_name = std::path::Path::new(&sample_file)
+                .file_stem()
+                .context("Failed to find the sample base name")?
+                .to_str()
+                .context("The sample does not have a valid base name")?
+                .to_string();
+
+            program_layer.set_child_text("RootNote", root_note.to_string())?;
+            program_layer.set_child_text("SampleName", sample_name)?;
+            program_layer.set_child_text("SampleFile", sample_file)?;
+        }
 
         program_keygroups
             .children
@@ -95,7 +112,7 @@ where
 mod tests {
     use music_note::midi::MidiNote;
 
-    use crate::Range;
+    use crate::{Layer, Range};
 
     pub use super::*;
 
@@ -105,8 +122,7 @@ mod tests {
             "Hello World",
             &vec![Keygroup::new(
                 Range::new(MidiNote::from(0), MidiNote::from(127)),
-                MidiNote::from(47),
-                "HELLO".to_string(),
+                vec![Layer::new("HELLO.wav".to_string(), MidiNote::from(47))],
             )],
         )
         .expect("Could not make the program at all");
@@ -120,6 +136,25 @@ mod tests {
                 .get_text()
                 .expect("no program text"),
             "Hello World"
+        );
+
+        assert_eq!(
+            program
+                .get_child("Program")
+                .expect("no program root")
+                .get_child("Instruments")
+                .expect("no instrument list")
+                .get_child("Instrument")
+                .expect("no instrument in the list")
+                .get_child("Layers")
+                .expect("no layer list")
+                .get_child("Layer")
+                .expect("no layer in the list")
+                .get_child("SampleFile")
+                .expect("no sample file")
+                .get_text()
+                .unwrap(),
+            "HELLO.wav"
         );
     }
 }

@@ -63,7 +63,7 @@ impl TemplateApp {
             .program
             .keygroups
             .iter()
-            .filter_map(|kg| Some((kg, kg.root?, kg.range.as_ref()?)))
+            .filter_map(|kg| Some((kg, kg.layers[0].root?, kg.range.as_ref()?)))
         {
             for note in range.low.into_byte()..=range.high.into_byte() {
                 let mut color = kg.color();
@@ -71,7 +71,7 @@ impl TemplateApp {
                     color = color.linear_multiply(0.5);
                 }
                 colors.insert(note, color);
-                texts.insert(note, kg.file.clone());
+                texts.insert(note, kg.layers[0].file.clone());
             }
         }
 

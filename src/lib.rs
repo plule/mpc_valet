@@ -102,14 +102,18 @@ impl KeygroupProgram {
     }
 
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
-        self.keygroups.sort_by(|a, b| a.root.cmp(&b.root));
+        self.keygroups
+            .sort_by(|a, b| a.layers[0].root.cmp(&b.layers[0].root));
         let kg_with_root: Vec<&mut Keygroup> = self
             .keygroups
             .iter_mut()
-            .filter(|kg| kg.root.is_some())
+            .filter(|kg| kg.layers[0].root.is_some())
             .collect();
 
-        let roots: Vec<MidiNote> = kg_with_root.iter().map(|kg| kg.root.unwrap()).collect();
+        let roots: Vec<MidiNote> = kg_with_root
+            .iter()
+            .map(|kg| kg.layers[0].root.unwrap())
+            .collect();
         let ranges = range::build_ranges(&roots, pitch_preference);
 
         for (kg, range) in kg_with_root.into_iter().zip(ranges.into_iter()) {
@@ -129,7 +133,7 @@ impl KeygroupProgram {
     pub fn can_export(&self) -> bool {
         self.keygroups
             .iter()
-            .all(|kg| kg.root.is_some() && kg.range.is_some())
+            .all(|kg| kg.range.is_some() && kg.layers.iter().all(|layer| layer.root.is_some()))
     }
 
     pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
@@ -138,7 +142,11 @@ impl KeygroupProgram {
             guess_ranges = true;
         } else {
             for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                if kg.file != new_kg.file || kg.root != new_kg.root {
+                let first_layer = &kg.layers[0];
+                let new_first_layer = &new_kg.layers[0];
+                if first_layer.file != new_first_layer.file
+                    || first_layer.root != new_first_layer.root
+                {
                     guess_ranges = true;
                     break;
                 }
@@ -155,41 +163,57 @@ impl KeygroupProgram {
 
 #[derive(Debug, Clone)]
 pub struct Keygroup {
-    pub file: String,
-    pub root: Option<MidiNote>,
     pub range: Option<Range>,
+    pub layers: Vec<Layer>,
 }
 
 impl Keygroup {
-    pub fn new(range: Range, root: MidiNote, file: String) -> Self {
+    pub fn new(range: Range, layers: Vec<Layer>) -> Self {
         Self {
-            file,
-            root: Some(root),
             range: Some(range),
+            layers,
         }
     }
 
     pub fn from_file(file: String) -> Self {
-        let root = parse::parse_note(&file);
         Self {
-            file,
-            root,
             range: None,
+            layers: vec![Layer::from_file(file)],
         }
-    }
-
-    pub fn guess_root(&mut self) {
-        self.root = parse::parse_note(&self.file);
     }
 
     pub fn color(&self) -> Color32 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        self.file.hash(&mut hasher);
+        self.layers[0].file.hash(&mut hasher);
         let color = RandomColor::new()
             .seed(hasher.finish())
             .luminosity(Luminosity::Light)
             .to_rgb_array();
         Color32::from_rgb(color[0], color[1], color[2])
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Layer {
+    pub file: String,
+    pub root: Option<MidiNote>,
+}
+
+impl Layer {
+    pub fn new(file: String, root: MidiNote) -> Self {
+        Self {
+            file,
+            root: Some(root),
+        }
+    }
+
+    pub fn from_file(file: String) -> Self {
+        let root = parse::parse_note(&file);
+        Self { file, root }
+    }
+
+    pub fn guess_root(&mut self) {
+        self.root = parse::parse_note(&self.file);
     }
 }
 
