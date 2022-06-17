@@ -42,7 +42,8 @@ impl<'a> Widget for SamplesArea<'a> {
                         self.current_layer,
                     ));
                     if table.changed() {
-                        self.program.update(keygroups, *self.pitch_preference);
+                        self.program
+                            .update(*self.current_layer, keygroups, *self.pitch_preference);
                     }
                     table
                 })

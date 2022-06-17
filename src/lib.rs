@@ -107,18 +107,33 @@ impl KeygroupProgram {
             };
             let layer = keygroup.layers[layer].get_or_insert(Layer::default());
             layer.file = file.to_string();
+            layer.guess_root();
+        }
+    }
+
+    pub fn sort_layer(&mut self, layer: usize) {
+        let mut layers: Vec<Option<Layer>> = self
+            .keygroups
+            .iter_mut()
+            .map(|kg| kg.layers[layer].clone())
+            .collect();
+        layers.sort();
+        for (sorted_layer, layer) in layers
+            .iter()
+            .zip(self.keygroups.iter_mut().map(|kg| &mut kg.layers[layer]))
+        {
+            *layer = sorted_layer.clone();
         }
     }
 
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
-        self.keygroups.sort();
-
         // keep only the keygroups with root note, and iterate in the root notes
         let (keygroups_with_root_note, root_notes): (Vec<_>, Vec<_>) = self
             .keygroups
             .iter_mut()
             .filter_map(|kg| {
-                kg.first_assigned_layer()
+                kg.layers[0]
+                    .as_ref()
                     .and_then(|layer| layer.root)
                     .map(|root_note| (kg, root_note))
             })
@@ -146,17 +161,17 @@ impl KeygroupProgram {
         self.keygroups.iter().all(|kg| kg.range.is_some())
     }
 
-    pub fn update(&mut self, keygroups: Vec<Keygroup>, pitch_preference: f32) {
+    pub fn update(&mut self, layer: usize, keygroups: Vec<Keygroup>, pitch_preference: f32) {
         let mut guess_ranges = false;
+        let default_layer = Layer::default();
         if keygroups.len() != self.keygroups.len() {
             guess_ranges = true;
         } else {
             for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                let first_layer = kg.first_assigned_layer().unwrap();
-                let new_first_layer = new_kg.first_assigned_layer().unwrap();
-                if first_layer.file != new_first_layer.file
-                    || first_layer.root != new_first_layer.root
-                {
+                let previous_layer = kg.layers[layer].as_ref().unwrap_or(&default_layer);
+                let new_layer = new_kg.layers[layer].as_ref().unwrap_or(&default_layer);
+
+                if previous_layer.file != new_layer.file || previous_layer.root != new_layer.root {
                     guess_ranges = true;
                     break;
                 }

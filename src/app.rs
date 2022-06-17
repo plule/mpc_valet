@@ -140,6 +140,7 @@ impl eframe::App for TemplateApp {
                 })
                 .collect();
             self.program.add_files(self.current_layer, filenames);
+            self.program.sort_layer(self.current_layer);
             self.program.guess_ranges(self.pitch_preference);
         }
     }
