@@ -96,9 +96,18 @@ impl Default for KeygroupProgram {
 }
 
 impl KeygroupProgram {
-    pub fn add_files(&mut self, files: Vec<String>) {
-        self.keygroups
-            .extend(files.into_iter().map(Keygroup::from_file));
+    pub fn add_files(&mut self, layer: usize, files: Vec<String>) {
+        for (index, file) in files.iter().enumerate() {
+            let keygroup = match self.keygroups.get_mut(index) {
+                Some(keygroup) => keygroup,
+                None => {
+                    self.keygroups.push(Keygroup::default());
+                    &mut self.keygroups[index]
+                }
+            };
+            let layer = keygroup.layers[layer].get_or_insert(Layer::default());
+            layer.file = file.to_string();
+        }
     }
 
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
@@ -162,7 +171,7 @@ impl KeygroupProgram {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Keygroup {
     pub range: Option<Range>,
     pub layers: [Option<Layer>; 4],

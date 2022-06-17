@@ -9,6 +9,8 @@ use egui::{Layout, Vec2};
 pub struct TemplateApp {
     pub program: KeygroupProgram,
 
+    pub current_layer: usize,
+
     pub pitch_preference: f32,
 
     pub last_error: Result<()>,
@@ -22,6 +24,7 @@ impl Default for TemplateApp {
         Self {
             program: Default::default(),
             pitch_preference: 0.5,
+            current_layer: 0,
             last_error: Ok(()),
             #[cfg(not(target_arch = "wasm32"))]
             sample_dir: Default::default(),
@@ -97,6 +100,7 @@ impl eframe::App for TemplateApp {
                         ui.add(crate::widgets::SamplesArea::new(
                             &mut self.program,
                             &mut self.pitch_preference,
+                            &mut self.current_layer,
                         ));
                         ui.separator();
                         self.keyboard_ui(ui);
@@ -135,7 +139,7 @@ impl eframe::App for TemplateApp {
                     drop.name.to_string()
                 })
                 .collect();
-            self.program.add_files(filenames);
+            self.program.add_files(self.current_layer, filenames);
             self.program.guess_ranges(self.pitch_preference);
         }
     }
