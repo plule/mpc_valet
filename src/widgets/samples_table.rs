@@ -64,22 +64,16 @@ impl<'a> Widget for SamplesTable<'a> {
                                 let layer = keygroup.layers[*self.current_layer].as_mut();
 
                                 if let Some(layer) = layer {
-                                    let sample_text = layer.file.clone();
-                                    let r = if sample_text.ends_with(".wav")
-                                        || sample_text.ends_with(".WAV")
+                                    // Delete Button
+                                    if ui
+                                        .button(RichText::new("❌").color(Color32::GRAY))
+                                        .clicked()
                                     {
-                                        ui.label(
-                                            RichText::new(format!("🎵 {}", sample_text))
-                                                .color(color),
-                                        )
-                                    } else {
-                                        ui.label(format!("⚠ {}", sample_text)).on_hover_text(
-                                            "Programs should be done from .wav samples.",
-                                        )
-                                    };
-                                    resp = resp.union(r);
+                                        resp.mark_changed();
+                                        delete_index = Some(index);
+                                    }
 
-                                    // Layer 1 Root Note
+                                    // Root Note button
                                     let root_note_text = match &layer.root {
                                         Some(root) => {
                                             format!("🎵 {}{}", root.pitch(), root.octave(),)
@@ -104,14 +98,20 @@ impl<'a> Widget for SamplesTable<'a> {
                                         }
                                     });
 
-                                    // Delete Button
-                                    if ui
-                                        .button(RichText::new("❌").color(Color32::GRAY))
-                                        .clicked()
+                                    let sample_text = layer.file.clone();
+                                    let r = if sample_text.ends_with(".wav")
+                                        || sample_text.ends_with(".WAV")
                                     {
-                                        resp.mark_changed();
-                                        delete_index = Some(index);
-                                    }
+                                        ui.label(
+                                            RichText::new(format!("🎵 {}", sample_text))
+                                                .color(color),
+                                        )
+                                    } else {
+                                        ui.label(format!("⚠ {}", sample_text)).on_hover_text(
+                                            "Programs should be done from .wav samples.",
+                                        )
+                                    };
+                                    resp = resp.union(r);
                                 }
                             });
 
