@@ -7,10 +7,8 @@ pub mod range;
 pub mod widgets;
 use anyhow::Result;
 use egui::Color32;
-use itertools::Itertools;
 use random_color::{Luminosity, RandomColor};
 use std::{
-    collections::HashSet,
     hash::{Hash, Hasher},
     io::Write,
 };
@@ -100,18 +98,16 @@ impl Default for KeygroupProgram {
 impl KeygroupProgram {
     pub fn add_files(&mut self, layer: usize, files: Vec<String>) {
         for file in files.iter() {
-            let keygroup;
-
-            if let Some(kg) = self
+            let keygroup = if let Some(kg) = self
                 .keygroups
                 .iter_mut()
                 .find(|kg| kg.layers[layer].is_none())
             {
-                keygroup = kg;
+                kg
             } else {
                 self.keygroups.push(Keygroup::default());
-                keygroup = self.keygroups.last_mut().unwrap();
-            }
+                self.keygroups.last_mut().unwrap()
+            };
 
             let layer = keygroup.layers[layer].get_or_insert(Layer::default());
             layer.file = file.to_string();
@@ -154,7 +150,7 @@ impl KeygroupProgram {
                                     }
                                 }
                             }
-                            return false;
+                            false
                         });
                         if let Some(matching_position) = matching_layer {
                             kg.layers[layer_index] = layers[matching_position].clone();
