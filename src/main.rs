@@ -10,7 +10,7 @@ fn main() {
     eframe::run_native(
         "MPC Valet",
         native_options,
-        Box::new(|cc| Box::new(mpc_valet::TemplateApp::new(cc))),
+        Box::new(|cc| Box::new(mpc_valet::App::new(cc))),
     );
 }
 

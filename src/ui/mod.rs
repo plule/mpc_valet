@@ -1,3 +1,4 @@
+mod app;
 mod footer;
 mod header;
 mod instructions;
@@ -7,6 +8,7 @@ mod samples_area;
 mod samples_table;
 mod save_program_button;
 
+pub use app::*;
 pub use footer::*;
 pub use header::*;
 pub use instructions::*;

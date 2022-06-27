@@ -1,6 +1,25 @@
 use music_note::{midi::MidiNote, Interval};
 
-use crate::Range;
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Range {
+    pub low: MidiNote,
+    pub high: MidiNote,
+}
+
+impl Range {
+    pub fn new(low: MidiNote, high: MidiNote) -> Self {
+        Self { low, high }
+    }
+}
+
+impl Default for Range {
+    fn default() -> Self {
+        Self {
+            low: MidiNote::from_byte(0),
+            high: MidiNote::from_byte(127),
+        }
+    }
+}
 
 /// Create an appropriate set of ranges from midi notes
 pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<Range>

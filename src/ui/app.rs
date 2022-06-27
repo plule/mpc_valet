@@ -1,12 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::widgets::Keyboard;
+use super::Keyboard;
 use crate::KeygroupProgram;
 use anyhow::Result;
 use egui::Visuals;
 use egui::{Layout, Vec2};
 
-pub struct TemplateApp {
+pub struct App {
     pub program: KeygroupProgram,
 
     pub current_layer: usize,
@@ -19,7 +19,7 @@ pub struct TemplateApp {
     pub sample_dir: std::path::PathBuf,
 }
 
-impl Default for TemplateApp {
+impl Default for App {
     fn default() -> Self {
         Self {
             program: Default::default(),
@@ -32,7 +32,7 @@ impl Default for TemplateApp {
     }
 }
 
-impl TemplateApp {
+impl App {
     /// Called once before the first frame.
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         // This is also where you can customized the look at feel of egui using
@@ -46,7 +46,7 @@ impl TemplateApp {
                 ui.label("Instrument Name:");
                 ui.text_edit_singleline(&mut self.program.name);
                 let mut save_button =
-                    crate::widgets::SaveProgramButton::new(&mut self.program, &mut self.last_error);
+                    crate::ui::SaveProgramButton::new(&mut self.program, &mut self.last_error);
 
                 #[cfg(not(target_arch = "wasm32"))]
                 {
@@ -84,7 +84,7 @@ impl TemplateApp {
     }
 }
 
-impl eframe::App for TemplateApp {
+impl eframe::App for App {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -95,9 +95,9 @@ impl eframe::App for TemplateApp {
                     Vec2::from([512.0, ui.available_height()]),
                     Layout::top_down(egui::Align::Center),
                     |ui| {
-                        ui.add(crate::widgets::Header::default());
+                        ui.add(crate::ui::Header::default());
                         ui.separator();
-                        ui.add(crate::widgets::SamplesArea::new(
+                        ui.add(crate::ui::SamplesArea::new(
                             &mut self.program,
                             &mut self.pitch_preference,
                             &mut self.current_layer,
@@ -106,8 +106,8 @@ impl eframe::App for TemplateApp {
                         self.keyboard_ui(ui);
                         ui.separator();
                         self.save_ui(ui);
-                        ui.add(crate::widgets::Instructions::default());
-                        ui.add(crate::widgets::Footer::new(&self.last_error));
+                        ui.add(crate::ui::Instructions::default());
+                        ui.add(crate::ui::Footer::new(&self.last_error));
                     },
                 );
             });

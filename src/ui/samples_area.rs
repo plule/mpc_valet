@@ -38,7 +38,7 @@ impl<'a> Widget for SamplesArea<'a> {
                 .vertical(|ui| {
                     ui.set_max_height(ui.available_height() / 2.0);
                     let mut keygroups = self.program.keygroups.clone();
-                    let table = ui.add(crate::widgets::SamplesTable::new(
+                    let table = ui.add(crate::ui::SamplesTable::new(
                         &mut keygroups,
                         self.current_layer,
                     ));
@@ -50,7 +50,7 @@ impl<'a> Widget for SamplesArea<'a> {
                 })
                 .inner;
             if ui
-                .add(crate::widgets::PitchSlider::new(self.pitch_preference))
+                .add(crate::ui::PitchSlider::new(self.pitch_preference))
                 .changed()
             {
                 self.program.guess_ranges(*self.pitch_preference);
