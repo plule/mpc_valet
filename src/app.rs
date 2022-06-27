@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::widgets::Keyboard;
 use crate::KeygroupProgram;
@@ -123,7 +123,7 @@ impl eframe::App for TemplateApp {
                     self.sample_dir = dir.to_path_buf();
                 }
             }
-            let filenames: Vec<String> = ctx
+            let filenames: HashSet<String> = ctx
                 .input()
                 .raw
                 .dropped_files

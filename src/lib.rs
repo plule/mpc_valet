@@ -9,6 +9,7 @@ use anyhow::Result;
 use egui::Color32;
 use random_color::{Luminosity, RandomColor};
 use std::{
+    collections::HashSet,
     hash::{Hash, Hasher},
     io::Write,
 };
@@ -96,8 +97,20 @@ impl Default for KeygroupProgram {
 }
 
 impl KeygroupProgram {
-    pub fn add_files(&mut self, layer: usize, files: Vec<String>) {
-        for file in files.iter() {
+    pub fn add_files(&mut self, layer: usize, files: HashSet<String>) {
+        let existing_files: HashSet<String> = HashSet::from_iter(
+            self.keygroups
+                .iter()
+                .filter_map(|kg| kg.layers[layer].as_ref())
+                .map(|l| l.file.clone()),
+        );
+
+        let files: Vec<String> = files
+            .into_iter()
+            .filter(|file| !existing_files.contains(file))
+            .collect();
+
+        for file in files {
             let keygroup = if let Some(kg) = self
                 .keygroups
                 .iter_mut()
