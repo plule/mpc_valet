@@ -19,9 +19,10 @@ pub fn parse_number_notation(filename: &str) -> Option<MidiNote> {
 
 pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"(?:[^A-Z]|^)(?P<letter>[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])")
-                .expect("BUG: Invalid letter notation regex");
+        static ref RE: Regex = Regex::new(
+            r"(?:(?i)[^A-Z]|^)(?P<letter>(?i)[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])"
+        )
+        .expect("BUG: Invalid letter notation regex");
     }
 
     let capture = RE.captures(filename)?;
@@ -40,13 +41,13 @@ pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
         .as_str();
 
     let natural = match letter {
-        "A" => Some(Natural::A),
-        "B" => Some(Natural::B),
-        "C" => Some(Natural::C),
-        "D" => Some(Natural::D),
-        "E" => Some(Natural::E),
-        "F" => Some(Natural::F),
-        "G" => Some(Natural::G),
+        "A" | "a" => Some(Natural::A),
+        "B" | "b" => Some(Natural::B),
+        "C" | "c" => Some(Natural::C),
+        "D" | "d" => Some(Natural::D),
+        "E" | "e" => Some(Natural::E),
+        "F" | "f" => Some(Natural::F),
+        "G" | "g" => Some(Natural::G),
         _ => None,
     }?;
 
@@ -89,7 +90,9 @@ mod tests {
     #[case("MELCEL-A2.WAV", midi!(A,2))]
     #[case("MELCEL-A-1.WAV", midi!(A,-1))]
     #[case("MELCEL-D0.WAV", midi!(D,0))]
+    #[case("MELCEL-Db0.WAV", midi!(CSharp,0))]
     #[case("MELCEL-F4.WAV", midi!(F,4))]
+    #[case("de_1_d#5.wav", midi!(DSharp,5))]
     fn parse_letter_notation_test(#[case] input: &str, #[case] expected: MidiNote) {
         assert_eq!(parse_letter_notation(input), Some(expected));
     }
