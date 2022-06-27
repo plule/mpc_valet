@@ -1,9 +1,12 @@
 use crate::KeygroupProgram;
+use crate::LayerVelocityMode;
 use anyhow::Context;
 use anyhow::Result;
 use egui::{FontId, RichText, Widget};
 pub struct SaveProgramButton<'a> {
     pub program: &'a mut KeygroupProgram,
+
+    pub layer_mode: &'a mut LayerVelocityMode,
 
     pub last_error: &'a mut Result<()>,
 
@@ -12,10 +15,15 @@ pub struct SaveProgramButton<'a> {
 }
 
 impl<'a> SaveProgramButton<'a> {
-    pub fn new(program: &'a mut KeygroupProgram, last_error: &'a mut Result<()>) -> Self {
+    pub fn new(
+        program: &'a mut KeygroupProgram,
+        layer_mode: &'a mut LayerVelocityMode,
+        last_error: &'a mut Result<()>,
+    ) -> Self {
         Self {
             program,
             last_error,
+            layer_mode,
             #[cfg(not(target_arch = "wasm32"))]
             sample_dir: Default::default(),
         }
@@ -90,11 +98,23 @@ impl<'a> SaveProgramButton<'a> {
 
 impl<'a> Widget for SaveProgramButton<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        if self.program.layer_count() >= 2 {
+            ui.selectable_value(
+                self.layer_mode,
+                LayerVelocityMode::Overlapping,
+                "Overlapping",
+            )
+            .on_hover_text("All the samples are always triggered.");
+            ui.selectable_value(self.layer_mode, LayerVelocityMode::Spread, "Spread")
+                .on_hover_text("Each sample is only triggered for a certain velocity range.");
+        }
+
         let button = ui
             .button(RichText::new("Save").font(FontId::proportional(20.0)))
             .on_disabled_hover_text("Add samples first")
             .on_hover_text("Make sure to save the file in the same folder as the samples!");
         if button.clicked() {
+            self.program.set_velocity_layer_mode(self.layer_mode);
             let file_name = format!("{}.xpm", self.program.name);
             if let Err(e) = self.export_program_dialog(&file_name) {
                 *self.last_error = Err(e)

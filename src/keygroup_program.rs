@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::{collections::HashSet, io::Write};
 use xmltree::EmitterConfig;
 
-use crate::{export, range, Keygroup, Layer};
+use crate::{export, range, Keygroup, Layer, LayerVelocityMode};
 
 #[derive(Debug)]
 pub struct KeygroupProgram {
@@ -167,6 +167,20 @@ impl KeygroupProgram {
 
         if guess_ranges {
             self.guess_ranges(pitch_preference);
+        }
+    }
+
+    pub fn layer_count(&self) -> usize {
+        self.keygroups
+            .iter()
+            .map(|kg| kg.layer_count())
+            .max()
+            .unwrap_or_default()
+    }
+
+    pub fn set_velocity_layer_mode(&mut self, mode: &LayerVelocityMode) {
+        for keygroup in self.keygroups.iter_mut() {
+            keygroup.set_velocity_layer_mode(mode);
         }
     }
 }

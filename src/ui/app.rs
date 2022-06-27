@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use super::Keyboard;
-use crate::KeygroupProgram;
+use crate::{KeygroupProgram, LayerVelocityMode};
 use anyhow::Result;
 use egui::Visuals;
 use egui::{Layout, Vec2};
@@ -13,6 +13,8 @@ pub struct App {
     pub current_layer: usize,
 
     pub pitch_preference: f32,
+
+    pub layer_mode: LayerVelocityMode,
 
     pub last_error: Result<()>,
 
@@ -27,6 +29,7 @@ impl Default for App {
             pitch_preference: 0.5,
             current_layer: 0,
             last_error: Ok(()),
+            layer_mode: LayerVelocityMode::Spread,
             #[cfg(not(target_arch = "wasm32"))]
             sample_dir: Default::default(),
         }
@@ -46,8 +49,11 @@ impl App {
             ui.horizontal(|ui| {
                 ui.label("Instrument Name:");
                 ui.text_edit_singleline(&mut self.program.name);
-                let mut save_button =
-                    crate::ui::SaveProgramButton::new(&mut self.program, &mut self.last_error);
+                let mut save_button = crate::ui::SaveProgramButton::new(
+                    &mut self.program,
+                    &mut self.layer_mode,
+                    &mut self.last_error,
+                );
 
                 #[cfg(not(target_arch = "wasm32"))]
                 {
