@@ -142,16 +142,16 @@ impl KeygroupProgram {
                     kg.layers[layer_index] = None;
 
                     if let Some(range) = &kg.range {
+                        // Find the index of a layer with ranges corresponding to the root of this sample
                         let matching_layer = layers.iter().position(|layer| {
-                            if let Some(layer) = layer {
-                                if let Some(root) = &layer.root {
-                                    if *root >= range.low && *root <= range.high {
-                                        return true;
-                                    }
-                                }
-                            }
-                            false
+                            layer
+                                .as_ref()
+                                .and_then(|layer| layer.root)
+                                .filter(|root| root >= &range.low && root <= &range.high)
+                                .is_some()
                         });
+
+                        // If found, assign it and remove it from the layer list being sorted
                         if let Some(matching_position) = matching_layer {
                             kg.layers[layer_index] = layers[matching_position].clone();
                             layers.remove(matching_position);
