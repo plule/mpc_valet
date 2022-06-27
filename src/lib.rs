@@ -222,6 +222,12 @@ impl KeygroupProgram {
     pub fn update(&mut self, layer: usize, keygroups: Vec<Keygroup>, pitch_preference: f32) {
         let default_layer = Layer::default();
 
+        // Remove empty layers from the input
+        let keygroups: Vec<Keygroup> = keygroups
+            .into_iter()
+            .filter(|kg| kg.layers.iter().any(|layer| layer.is_some()))
+            .collect();
+
         // If there is any file change or root note change, guess again the ranges
         let guess_ranges = (keygroups.len() != self.keygroups.len())
             || self

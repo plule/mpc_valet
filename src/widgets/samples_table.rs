@@ -119,7 +119,7 @@ impl<'a> Widget for SamplesTable<'a> {
                         }
 
                         if let Some(delete_index) = delete_index {
-                            self.keygroups.remove(delete_index);
+                            self.keygroups[delete_index].layers[*self.current_layer] = None;
                         }
 
                         resp
