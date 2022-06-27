@@ -5,6 +5,7 @@ use crate::KeygroupProgram;
 use anyhow::Result;
 use egui::Visuals;
 use egui::{Layout, Vec2};
+use itertools::Itertools;
 
 pub struct App {
     pub program: KeygroupProgram,
@@ -62,21 +63,32 @@ impl App {
         let mut colors = HashMap::new();
         let mut texts = HashMap::new();
 
-        for (kg, root, range, file) in self.program.keygroups.iter().filter_map(|kg| {
-            Some((
-                kg,
-                kg.first_assigned_layer()?.root?,
-                kg.range.as_ref()?,
-                kg.first_assigned_layer()?.file.clone(),
-            ))
-        }) {
+        for (kg, range) in self
+            .program
+            .keygroups
+            .iter()
+            .filter_map(|kg| Some((kg, kg.range.as_ref()?)))
+        {
+            let text = kg
+                .layers
+                .iter()
+                .filter_map(|layer| Some(layer.clone()?.file))
+                .join(", ");
+
+            let roots = HashSet::<u8>::from_iter(
+                kg.layers
+                    .iter()
+                    .filter_map(|layer| Some(layer.clone()?.root?.into_byte())),
+            );
+
             for note in range.start().into_byte()..=range.end().into_byte() {
                 let mut color = kg.color();
-                if note != root.into_byte() {
+                if !roots.contains(&note) {
                     color = color.linear_multiply(0.5);
                 }
                 colors.insert(note, color);
-                texts.insert(note, file.clone());
+
+                texts.insert(note, text.clone());
             }
         }
 
