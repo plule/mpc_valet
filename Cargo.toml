@@ -31,7 +31,7 @@ random_color = "0.6.1"
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tracing-subscriber = "0.3"
-rfd = "0.8.2"
+rfd = "0.9.1"
 
 # web:
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -41,7 +41,7 @@ js-sys = "0.3.57"
 web-sys = {version = "0.3.57", features = ["Document", "Window", "Node", "HtmlElement", "Element"]}
 
 [dev-dependencies]
-rstest = "0.12.0"
+rstest = "0.14.0"
 
 [profile.release]
 opt-level = 2 # fast and small wasm
