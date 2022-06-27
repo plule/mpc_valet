@@ -7,8 +7,10 @@ pub mod range;
 pub mod widgets;
 use anyhow::Result;
 use egui::Color32;
+use itertools::Itertools;
 use random_color::{Luminosity, RandomColor};
 use std::{
+    collections::HashSet,
     hash::{Hash, Hasher},
     io::Write,
 };
@@ -111,18 +113,59 @@ impl KeygroupProgram {
         }
     }
 
-    pub fn sort_layer(&mut self, layer: usize) {
-        let mut layers: Vec<Option<Layer>> = self
-            .keygroups
-            .iter_mut()
-            .map(|kg| kg.layers[layer].clone())
-            .collect();
-        layers.sort();
-        for (sorted_layer, layer) in layers
-            .iter()
-            .zip(self.keygroups.iter_mut().map(|kg| &mut kg.layers[layer]))
-        {
-            *layer = sorted_layer.clone();
+    fn sort_keygroups(&mut self) {
+        self.keygroups.sort();
+    }
+
+    pub fn sort_layer(&mut self, layer_index: usize) {
+        match layer_index {
+            0 => {
+                self.sort_keygroups();
+
+                // Resort the other layers
+                for layer_index in 1..4 {
+                    self.sort_layer(layer_index);
+                }
+            }
+            _ => {
+                // Store the layer
+                let mut layers: Vec<Option<Layer>> = self
+                    .keygroups
+                    .iter()
+                    .map(|kg| kg.layers[layer_index].clone())
+                    .collect();
+
+                // Assign matching layers
+                for kg in self.keygroups.iter_mut() {
+                    kg.layers[layer_index] = None;
+
+                    if let Some(range) = &kg.range {
+                        let matching_layer = layers.iter().position(|layer| {
+                            if let Some(layer) = layer {
+                                if let Some(root) = &layer.root {
+                                    if *root >= range.low && *root <= range.high {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
+                        });
+                        if let Some(matching_position) = matching_layer {
+                            kg.layers[layer_index] = layers[matching_position].clone();
+                            layers.remove(matching_position);
+                        }
+                    }
+                }
+
+                // Assign remaining layers
+                for (unassigned_layer, kg) in layers.iter().zip(
+                    self.keygroups
+                        .iter_mut()
+                        .filter(|kg| kg.layers[layer_index].is_none()),
+                ) {
+                    kg.layers[layer_index] = unassigned_layer.clone().clone();
+                }
+            }
         }
     }
 
@@ -162,21 +205,19 @@ impl KeygroupProgram {
     }
 
     pub fn update(&mut self, layer: usize, keygroups: Vec<Keygroup>, pitch_preference: f32) {
-        let mut guess_ranges = false;
         let default_layer = Layer::default();
-        if keygroups.len() != self.keygroups.len() {
-            guess_ranges = true;
-        } else {
-            for (kg, new_kg) in self.keygroups.iter().zip(keygroups.iter()) {
-                let previous_layer = kg.layers[layer].as_ref().unwrap_or(&default_layer);
-                let new_layer = new_kg.layers[layer].as_ref().unwrap_or(&default_layer);
 
-                if previous_layer.file != new_layer.file || previous_layer.root != new_layer.root {
-                    guess_ranges = true;
-                    break;
-                }
-            }
-        }
+        // If there is any file change or root note change, guess again the ranges
+        let guess_ranges = (keygroups.len() != self.keygroups.len())
+            || self
+                .keygroups
+                .iter()
+                .zip(keygroups.iter())
+                .any(|(kg, new_kg)| {
+                    let previous_layer = kg.layers[layer].as_ref().unwrap_or(&default_layer);
+                    let new_layer = new_kg.layers[layer].as_ref().unwrap_or(&default_layer);
+                    previous_layer.file != new_layer.file || previous_layer.root != new_layer.root
+                });
 
         self.keygroups = keygroups;
 
@@ -194,15 +235,19 @@ pub struct Keygroup {
 
 impl PartialOrd for Keygroup {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.first_assigned_layer()
-            .partial_cmp(&other.first_assigned_layer())
+        self.layers
+            .get(0)
+            .as_ref()
+            .partial_cmp(&other.layers.get(0).as_ref())
     }
 }
 
 impl Ord for Keygroup {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.first_assigned_layer()
-            .cmp(&other.first_assigned_layer())
+        self.layers
+            .get(0)
+            .as_ref()
+            .cmp(&other.layers.get(0).as_ref())
     }
 }
 
