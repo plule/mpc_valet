@@ -1,35 +1,16 @@
+use std::ops::RangeInclusive;
+
 use music_note::{midi::MidiNote, Interval};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Range {
-    pub low: MidiNote,
-    pub high: MidiNote,
-}
-
-impl Range {
-    pub fn new(low: MidiNote, high: MidiNote) -> Self {
-        Self { low, high }
-    }
-}
-
-impl Default for Range {
-    fn default() -> Self {
-        Self {
-            low: MidiNote::from_byte(0),
-            high: MidiNote::from_byte(127),
-        }
-    }
-}
-
 /// Create an appropriate set of ranges from midi notes
-pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<Range>
+pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<RangeInclusive<MidiNote>>
 where
     I: IntoIterator<Item = &'a MidiNote>,
 {
     let notes: Vec<&MidiNote> = notes.into_iter().collect();
 
     if notes.is_empty() {
-        return Vec::<Range>::new();
+        return Vec::<RangeInclusive<MidiNote>>::new();
     }
 
     // Create all the interval cuts. It always have at least the min and max midi notes,
@@ -62,8 +43,7 @@ where
                     Interval::new(1)
                 };
             let high = w[1];
-
-            Range::new(low, high)
+            low..=high
         })
         .collect()
 }
@@ -111,9 +91,11 @@ mod tests {
         #[case] pitch_preference: f32,
     ) {
         let input: Vec<MidiNote> = input.iter().map(|semis| MidiNote::from(*semis)).collect();
-        let expected: Vec<Range> = expected
+        let expected: Vec<RangeInclusive<MidiNote>> = expected
             .iter()
-            .map(|(low, high)| Range::new(MidiNote::from(*low), MidiNote::from(*high)))
+            .map(|(low, high)| {
+                RangeInclusive::<MidiNote>::new(MidiNote::from(*low), MidiNote::from(*high))
+            })
             .collect();
         let ranges = build_ranges(&input, pitch_preference);
         assert_eq!(ranges, expected);

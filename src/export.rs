@@ -57,8 +57,8 @@ where
             .as_ref()
             .context("Attempted to export a program with missing ranges")?;
 
-        let low_note = range.low.into_byte() as u32;
-        let high_note = range.high.into_byte() as u32;
+        let low_note = range.start().into_byte() as u32;
+        let high_note = range.end().into_byte() as u32;
 
         program_keygroup.set_child_text("LowNote", low_note.to_string())?;
         program_keygroup.set_child_text("HighNote", high_note.to_string())?;
@@ -118,7 +118,7 @@ where
 mod tests {
     use music_note::midi::MidiNote;
 
-    use crate::{Layer, Range};
+    use crate::Layer;
 
     pub use super::*;
 
@@ -127,7 +127,7 @@ mod tests {
         let program = make_program(
             "Hello World",
             &vec![Keygroup::new(
-                Range::new(MidiNote::from(0), MidiNote::from(127)),
+                MidiNote::from(0)..=MidiNote::from(127),
                 [
                     Some(Layer::new("HELLO.wav".to_string(), MidiNote::from(47))),
                     None,

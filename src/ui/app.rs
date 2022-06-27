@@ -70,7 +70,7 @@ impl App {
                 kg.first_assigned_layer()?.file.clone(),
             ))
         }) {
-            for note in range.low.into_byte()..=range.high.into_byte() {
+            for note in range.start().into_byte()..=range.end().into_byte() {
                 let mut color = kg.color();
                 if note != root.into_byte() {
                     color = color.linear_multiply(0.5);

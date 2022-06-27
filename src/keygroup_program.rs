@@ -83,7 +83,7 @@ impl KeygroupProgram {
                             layer
                                 .as_ref()
                                 .and_then(|layer| layer.root)
-                                .filter(|root| root >= &range.low && root <= &range.high)
+                                .filter(|root| range.contains(root))
                                 .is_some()
                         });
 

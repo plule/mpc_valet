@@ -1,13 +1,17 @@
-use std::hash::{Hash, Hasher};
+use std::{
+    hash::{Hash, Hasher},
+    ops::RangeInclusive,
+};
 
 use egui::Color32;
+use music_note::midi::MidiNote;
 use random_color::{Luminosity, RandomColor};
 
-use crate::{Layer, Range};
+use crate::Layer;
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Keygroup {
-    pub range: Option<Range>,
+    pub range: Option<RangeInclusive<MidiNote>>,
     pub layers: [Option<Layer>; 4],
 }
 
@@ -30,7 +34,7 @@ impl Ord for Keygroup {
 }
 
 impl Keygroup {
-    pub fn new(range: Range, layers: [Option<Layer>; 4]) -> Self {
+    pub fn new(range: RangeInclusive<MidiNote>, layers: [Option<Layer>; 4]) -> Self {
         Self {
             range: Some(range),
             layers,

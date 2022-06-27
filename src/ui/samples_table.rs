@@ -51,10 +51,10 @@ impl<'a> Widget for SamplesTable<'a> {
                             let r = ui.horizontal(|ui| match &keygroup.range {
                                 Some(range) => ui.label(format!(
                                     "{}{} to {}{}",
-                                    range.low.pitch(),
-                                    range.low.octave(),
-                                    range.high.pitch(),
-                                    range.high.octave(),
+                                    range.start().pitch(),
+                                    range.start().octave(),
+                                    range.end().pitch(),
+                                    range.end().octave(),
                                 )),
                                 None => ui.label("⚠ ???").on_hover_text("Unknown range."),
                             });
