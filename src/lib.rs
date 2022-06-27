@@ -99,14 +99,20 @@ impl Default for KeygroupProgram {
 
 impl KeygroupProgram {
     pub fn add_files(&mut self, layer: usize, files: Vec<String>) {
-        for (index, file) in files.iter().enumerate() {
-            let keygroup = match self.keygroups.get_mut(index) {
-                Some(keygroup) => keygroup,
-                None => {
-                    self.keygroups.push(Keygroup::default());
-                    &mut self.keygroups[index]
-                }
-            };
+        for file in files.iter() {
+            let keygroup;
+
+            if let Some(kg) = self
+                .keygroups
+                .iter_mut()
+                .find(|kg| kg.layers[layer].is_none())
+            {
+                keygroup = kg;
+            } else {
+                self.keygroups.push(Keygroup::default());
+                keygroup = self.keygroups.last_mut().unwrap();
+            }
+
             let layer = keygroup.layers[layer].get_or_insert(Layer::default());
             layer.file = file.to_string();
             layer.guess_root();

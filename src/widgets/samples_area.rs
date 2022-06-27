@@ -24,10 +24,11 @@ impl<'a> Widget for SamplesArea<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let resp;
         if self.program.keygroups.is_empty() {
+            *self.current_layer = 0;
             resp = ui
                 .vertical_centered(|ui| {
                     ui.label(
-                        RichText::new("⮊ Drag-and-drop you samples here! ⮈")
+                        RichText::new("⮊ Drag-and-drop your samples here! ⮈")
                             .font(FontId::proportional(20.0)),
                     )
                 })
