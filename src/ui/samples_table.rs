@@ -19,27 +19,34 @@ impl<'a> SamplesTable<'a> {
 
 impl<'a> Widget for SamplesTable<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        egui::ScrollArea::vertical()
+        let response = egui::ScrollArea::vertical()
             .show(ui, |ui| {
                 egui::Grid::new("sample_grid")
-                    .num_columns(1)
+                    .num_columns(3)
                     .striped(true)
                     .show(ui, |ui| {
                         let mut delete_index = None;
 
-                        // Header
-                        let mut resp = ui.heading("Range");
+                        // Range
+                        let mut resp = ui
+                            .horizontal(|ui| {
+                                ui.set_min_width(100.0);
+                                ui.heading("Range")
+                            })
+                            .inner;
 
-                        ui.horizontal(|ui| {
-                            for i in 0..4 {
-                                let layer_name = i + 1;
-                                ui.selectable_value(
-                                    self.current_layer,
-                                    i,
-                                    format!("Layer {layer_name}"),
-                                );
-                            }
-                        });
+                        // Sample
+                        let r = ui
+                            .horizontal(|ui| {
+                                ui.set_min_width(200.0);
+                                ui.heading("Sample")
+                            })
+                            .inner;
+                        resp = resp.union(r);
+
+                        // Root Note
+                        let r = ui.heading("Root Note");
+                        resp = resp.union(r);
 
                         ui.end_row();
 
@@ -60,9 +67,9 @@ impl<'a> Widget for SamplesTable<'a> {
                             });
                             resp = resp.union(r.response);
 
+                            // Sample
                             ui.horizontal(|ui| {
                                 let layer = keygroup.layers[*self.current_layer].as_mut();
-
                                 if let Some(layer) = layer {
                                     // Delete Button
                                     if ui
@@ -72,31 +79,6 @@ impl<'a> Widget for SamplesTable<'a> {
                                         resp.mark_changed();
                                         delete_index = Some(index);
                                     }
-
-                                    // Root Note button
-                                    let root_note_text = match &layer.root {
-                                        Some(root) => {
-                                            format!("🎵 {}{}", root.pitch(), root.octave(),)
-                                        }
-                                        None => "⚠ ???".to_string(),
-                                    };
-                                    ui.menu_button(root_note_text, |ui| {
-                                        for octave in crate::OCTAVES {
-                                            ui.menu_button(format!("Octave {}", octave), |ui| {
-                                                for pitch in crate::PITCHES {
-                                                    if ui
-                                                        .button(format!("{}{}", pitch, octave))
-                                                        .clicked()
-                                                    {
-                                                        let root = MidiNote::new(pitch, octave);
-                                                        layer.root = Some(root);
-                                                        resp.mark_changed();
-                                                        ui.close_menu();
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
 
                                     let sample_text = layer.file.clone();
                                     let r = if sample_text.ends_with(".wav")
@@ -115,6 +97,34 @@ impl<'a> Widget for SamplesTable<'a> {
                                 }
                             });
 
+                            // Root Note button
+                            let layer = keygroup.layers[*self.current_layer].as_mut();
+                            if let Some(layer) = layer {
+                                let root_note_text = match &layer.root {
+                                    Some(root) => {
+                                        format!("🎵 {}{}", root.pitch(), root.octave(),)
+                                    }
+                                    None => "⚠ ???".to_string(),
+                                };
+                                ui.menu_button(root_note_text, |ui| {
+                                    for octave in crate::OCTAVES {
+                                        ui.menu_button(format!("Octave {}", octave), |ui| {
+                                            for pitch in crate::PITCHES {
+                                                if ui
+                                                    .button(format!("{}{}", pitch, octave))
+                                                    .clicked()
+                                                {
+                                                    let root = MidiNote::new(pitch, octave);
+                                                    layer.root = Some(root);
+                                                    resp.mark_changed();
+                                                    ui.close_menu();
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+
                             ui.end_row();
                         }
 
@@ -126,6 +136,14 @@ impl<'a> Widget for SamplesTable<'a> {
                     })
                     .inner
             })
-            .inner
+            .inner;
+
+        ui.horizontal(|ui| {
+            for i in 0..4 {
+                let layer_name = i + 1;
+                ui.selectable_value(self.current_layer, i, format!("Layer {layer_name}"));
+            }
+        });
+        response
     }
 }
