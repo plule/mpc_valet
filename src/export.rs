@@ -94,8 +94,14 @@ where
                     .to_str()
                     .context("The sample does not have a valid base name")?
                     .to_string();
+
+                let velocity_start = layer.velocity.start().to_string();
+                let velocity_end = layer.velocity.end().to_string();
+
                 program_layer.set_child_text("SampleName", sample_name)?;
                 program_layer.set_child_text("SampleFile", sample_file)?;
+                program_layer.set_child_text("VelStart", velocity_start)?;
+                program_layer.set_child_text("VelEnd", velocity_end)?;
 
                 if let Some(root_note) = layer.root {
                     let root_note = (root_note.into_byte() as u32) + 1; // off by one in the file format
@@ -129,7 +135,11 @@ mod tests {
             &vec![Keygroup::new(
                 MidiNote::from(0)..=MidiNote::from(127),
                 [
-                    Some(Layer::new("HELLO.wav".to_string(), MidiNote::from(47))),
+                    Some(Layer::new(
+                        "HELLO.wav".to_string(),
+                        MidiNote::from(47),
+                        25..=56,
+                    )),
                     None,
                     None,
                     None,
@@ -149,23 +159,43 @@ mod tests {
             "Hello World"
         );
 
+        let layer = program
+            .get_child("Program")
+            .expect("no program root")
+            .get_child("Instruments")
+            .expect("no instrument list")
+            .get_child("Instrument")
+            .expect("no instrument in the list")
+            .get_child("Layers")
+            .expect("no layer list")
+            .get_child("Layer")
+            .expect("no layer in the list");
+
         assert_eq!(
-            program
-                .get_child("Program")
-                .expect("no program root")
-                .get_child("Instruments")
-                .expect("no instrument list")
-                .get_child("Instrument")
-                .expect("no instrument in the list")
-                .get_child("Layers")
-                .expect("no layer list")
-                .get_child("Layer")
-                .expect("no layer in the list")
+            layer
                 .get_child("SampleFile")
                 .expect("no sample file")
                 .get_text()
                 .unwrap(),
             "HELLO.wav"
+        );
+
+        assert_eq!(
+            layer
+                .get_child("VelStart")
+                .expect("no velocity start")
+                .get_text()
+                .unwrap(),
+            "25"
+        );
+
+        assert_eq!(
+            layer
+                .get_child("VelEnd")
+                .expect("no velocity end")
+                .get_text()
+                .unwrap(),
+            "56"
         );
     }
 }
