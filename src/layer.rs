@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use music_note::midi::MidiNote;
 
-use crate::parse;
+use crate::PartialFromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Layer {
@@ -43,15 +43,15 @@ impl Layer {
     }
 
     pub fn from_file(file: String) -> Self {
-        let root = parse::parse_note(&file);
-        Self {
+        let mut layer = Self {
             file,
-            root,
             ..Default::default()
-        }
+        };
+        layer.guess_root();
+        layer
     }
 
     pub fn guess_root(&mut self) {
-        self.root = parse::parse_note(&self.file);
+        self.root = MidiNote::partial_from_str(&self.file).ok().map(|r| r.value);
     }
 }

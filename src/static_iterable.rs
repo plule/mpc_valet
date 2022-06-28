@@ -1,4 +1,4 @@
-///! Extensions for the midi_note crate
+///! Static Iterable trait
 use std::slice::Iter;
 
 use lazy_static::lazy_static;

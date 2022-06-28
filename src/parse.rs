@@ -1,4 +1,4 @@
-use lazy_static::lazy_static;
+///! Note parsing module
 use music_note::{
     midi::{MidiNote, Octave},
     note::{Accidental, AccidentalKind, Flat, Sharp},
@@ -6,7 +6,47 @@ use music_note::{
 };
 use regex::Regex;
 
-pub fn parse_number_notation(filename: &str) -> Option<MidiNote> {
+use lazy_static::lazy_static;
+
+/// Parsed value with additional suffix and prefix data.
+#[derive(Debug)]
+pub struct Parsed<'a, T> {
+    pub value: T,
+    pub prefix: &'a str,
+    pub suffix: &'a str,
+}
+
+/// FromStr accepting a string with more data.
+///
+/// It does not assume the string only contain the note data, but
+/// tolerate and retain a prefix and a suffix.
+pub trait PartialFromStr
+where
+    Self: Sized,
+{
+    type Err;
+
+    /// Try parsing a value from a string.
+    fn partial_from_str<'a>(s: &'a str) -> Result<Parsed<'a, Self>, Self::Err>;
+}
+
+impl PartialFromStr for MidiNote {
+    type Err = anyhow::Error;
+
+    fn partial_from_str<'a>(s: &'a str) -> Result<Parsed<'a, Self>, Self::Err> {
+        let note = parse_letter_notation(s).or_else(|| parse_number_notation(s));
+        if let Some(note) = note {
+            return Ok(Parsed {
+                value: note,
+                prefix: "",
+                suffix: "",
+            });
+        }
+        anyhow::bail!("Not a note")
+    }
+}
+
+fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
         static ref RE: Regex =
             Regex::new(r"1[0-2]\d|\d\d|\d").expect("BUG: Invalid number notation regex");
@@ -17,15 +57,16 @@ pub fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     Some(MidiNote::from(number))
 }
 
-pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
+fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
         static ref RE: Regex = Regex::new(
-            r"(?:(?i)[^A-Z]|^)(?P<letter>(?i)[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])"
+            r"(?P<prefix>.*)(?:(?i)[^A-Z]|^)(?P<letter>(?i)[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])(?P<suffix>.*)"
         )
         .expect("BUG: Invalid letter notation regex");
     }
 
     let capture = RE.captures(filename)?;
+    dbg!(&capture);
 
     let letter = capture
         .name("letter")
@@ -75,10 +116,6 @@ pub fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     Some(MidiNote::new(pitch, octave))
 }
 
-pub fn parse_note(filename: &str) -> Option<MidiNote> {
-    parse_letter_notation(filename).or_else(|| parse_number_notation(filename))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -118,11 +155,16 @@ mod tests {
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_note_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(parse_note(input), Some(expected));
+        assert_eq!(
+            MidiNote::partial_from_str(input)
+                .expect("Failed to parse valid note")
+                .value,
+            expected
+        );
     }
 
     #[test]
     fn parse_not_a_note() {
-        assert_eq!(parse_note("nope.wav"), None);
+        MidiNote::partial_from_str("nope.wav").unwrap_err();
     }
 }
