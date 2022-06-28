@@ -7,6 +7,7 @@ use music_note::{
 use regex::Regex;
 
 use lazy_static::lazy_static;
+use rulex_macro::rulex;
 
 /// Parsed value with additional suffix and prefix data.
 #[derive(Debug)]
@@ -51,9 +52,9 @@ impl PartialFromStr for MidiNote {
 
 /// Try parsing a file with a number midi notation (0-127)
 fn parse_number_notation(filename: &str) -> Option<MidiNote> {
+    const REGEX: &str = rulex!(range "0"-"127");
     lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"1[0-2]\d|\d\d|\d").expect("BUG: Invalid number notation regex");
+        static ref RE: Regex = Regex::new(REGEX).expect("BUG: Invalid number notation regex");
     }
 
     let capture = RE.captures(filename)?;
@@ -63,18 +64,17 @@ fn parse_number_notation(filename: &str) -> Option<MidiNote> {
 
 /// Try parsing a file with a letter notation (A2)
 fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
+    const REGEX: &str = rulex!(
+        (Start | !["A"-"Z" "a"-"z"]) :natural(["A"-"G" "a"-"g"]) :accidental(""|"#"|"b") :octave("-1" | range "0"-"9")
+    );
     lazy_static! {
-        static ref RE: Regex = Regex::new(
-            r"(?P<prefix>.*)(?:(?i)[^A-Z]|^)(?P<letter>(?i)[A-G])(?P<accidental>#?b?)(?P<octave>10|-?[0-9])(?P<suffix>.*)"
-        )
-        .expect("BUG: Invalid letter notation regex");
+        static ref RE: Regex = Regex::new(REGEX).expect("BUG: Invalid letter notation regex");
     }
 
     let capture = RE.captures(filename)?;
-    dbg!(&capture);
 
-    let letter = capture
-        .name("letter")
+    let natural = capture
+        .name("natural")
         .expect("BUG: Regex did not have the letter capture")
         .as_str();
     let accidental = capture
@@ -86,7 +86,7 @@ fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
         .expect("BUG: Regex did not have the octave capture")
         .as_str();
 
-    let natural = match letter {
+    let natural = match natural {
         "A" | "a" => Some(Natural::A),
         "B" | "b" => Some(Natural::B),
         "C" | "c" => Some(Natural::C),
