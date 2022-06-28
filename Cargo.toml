@@ -41,7 +41,7 @@ js-sys = "0.3.57"
 web-sys = {version = "0.3.57", features = ["Document", "Window", "Node", "HtmlElement", "Element"]}
 
 [dev-dependencies]
-rstest = "0.14.0"
+rstest = "0.15.0"
 
 [profile.release]
 opt-level = 2 # fast and small wasm
