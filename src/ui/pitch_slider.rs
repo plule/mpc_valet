@@ -13,13 +13,17 @@ impl<'a> PitchSlider<'a> {
 impl<'a> Widget for PitchSlider<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
-            ui.label("pitch down");
+            ui.label("pitch down").on_hover_text(
+                "The assigned range for each sample will be lower than its root note.",
+            );
             let response = ui.add(
                 egui::Slider::new(self.pitch_preference, 0.0..=1.0)
                     .clamp_to_range(true)
                     .show_value(false),
             );
-            ui.label("pitch up");
+            ui.label("pitch up").on_hover_text(
+                "The assigned range for each sample will be higher than its root note.",
+            );
             response
         })
         .inner
