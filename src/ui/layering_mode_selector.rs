@@ -35,6 +35,6 @@ impl<'a> Widget for LayeringModeSelector<'a> {
                 .on_hover_text("Each sample is only triggered for a certain velocity range.");
             Some(r1.union(r2))
         });
-        inner.inner.unwrap_or_else(|| inner.response)
+        inner.inner.unwrap_or(inner.response)
     }
 }

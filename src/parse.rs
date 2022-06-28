@@ -27,13 +27,13 @@ where
     type Err;
 
     /// Try parsing a value from a string.
-    fn partial_from_str<'a>(s: &'a str) -> Result<Parsed<'a, Self>, Self::Err>;
+    fn partial_from_str(s: &str) -> Result<Parsed<'_, Self>, Self::Err>;
 }
 
 impl PartialFromStr for MidiNote {
     type Err = anyhow::Error;
 
-    fn partial_from_str<'a>(s: &'a str) -> Result<Parsed<'a, Self>, Self::Err> {
+    fn partial_from_str(s: &str) -> Result<Parsed<'_, Self>, Self::Err> {
         let note = parse_letter_notation(s).or_else(|| parse_number_notation(s));
         if let Some(note) = note {
             return Ok(Parsed {

@@ -51,7 +51,7 @@ impl App {
                 ui.text_edit_singleline(&mut self.program.name);
                 let mut save_button = crate::ui::SaveProgramButton::new(
                     &mut self.program,
-                    &mut self.layer_mode,
+                    &self.layer_mode,
                     &mut self.last_error,
                 );
 
