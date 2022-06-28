@@ -1,69 +1,55 @@
-///! Note parsing module
+use anyhow::Context;
 use music_note::{
     midi::{MidiNote, Octave},
     note::{Accidental, AccidentalKind, Flat, Sharp},
     Natural, Pitch,
 };
 use regex::Regex;
+use std::str::FromStr;
 
 use lazy_static::lazy_static;
 use rulex_macro::rulex;
 
-/// Parsed value with additional suffix and prefix data.
+///! Note parsing module
+/// Parsed note with a layer identifier
 #[derive(Debug)]
-pub struct Parsed<'a, T> {
-    pub value: T,
-    pub prefix: &'a str,
-    pub suffix: &'a str,
+pub struct ParsedMidiNote {
+    pub value: MidiNote,
+    pub layer_identifier: String,
 }
 
-/// FromStr accepting a string with more data.
-///
-/// It does not assume the string only contain the note data, but
-/// tolerate and retain a prefix and a suffix.
-pub trait PartialFromStr
-where
-    Self: Sized,
-{
-    type Err;
-
-    /// Try parsing a value from a string.
-    ///
-    /// On success the result contains both the parsed result and
-    /// an additional prefix and suffix.
-    fn partial_from_str(s: &str) -> Result<Parsed<'_, Self>, Self::Err>;
-}
-
-impl PartialFromStr for MidiNote {
+impl FromStr for ParsedMidiNote {
     type Err = anyhow::Error;
 
-    fn partial_from_str(s: &str) -> Result<Parsed<'_, Self>, Self::Err> {
-        let note = parse_letter_notation(s).or_else(|| parse_number_notation(s));
-        if let Some(note) = note {
-            return Ok(Parsed {
-                value: note,
-                prefix: "",
-                suffix: "",
-            });
-        }
-        anyhow::bail!("Not a note")
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let note = parse_letter_notation(s)
+            .or_else(|| parse_number_notation(s))
+            .context("Not a note")?;
+        Ok(note)
     }
 }
 
 /// Try parsing a file with a number midi notation (0-127)
-fn parse_number_notation(filename: &str) -> Option<MidiNote> {
-    const REGEX: &str = rulex!(range "0"-"127");
+fn parse_number_notation(filename: &str) -> Option<ParsedMidiNote> {
+    const REGEX: &str = rulex!(
+        :value(range "0"-"127")
+    );
     lazy_static! {
         static ref RE: Regex = Regex::new(REGEX).expect("BUG: Invalid number notation regex");
     }
 
     let capture = RE.captures(filename)?;
-    let number = capture[0].parse::<u8>().ok()?;
-    Some(MidiNote::from(number))
+
+    let number = capture.name("value")?.as_str().parse::<u8>().ok()?;
+
+    Some(ParsedMidiNote {
+        layer_identifier: "".to_string(), // TODO
+        value: number.into(),
+    })
 }
 
 /// Try parsing a file with a letter notation (A2)
-fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
+fn parse_letter_notation(filename: &str) -> Option<ParsedMidiNote> {
     const REGEX: &str = rulex!(
         // Do not allow a letter just before the natural letter
         // It's likely an actual word
@@ -126,7 +112,10 @@ fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
         _ => None,
     }?;
 
-    Some(MidiNote::new(pitch, octave))
+    Some(ParsedMidiNote {
+        layer_identifier: "".to_string(), // TODO
+        value: MidiNote::new(pitch, octave),
+    })
 }
 
 #[cfg(test)]
@@ -144,7 +133,7 @@ mod tests {
     #[case("MELCEL-F4.WAV", midi!(F,4))]
     #[case("de_1_d#5.wav", midi!(DSharp,5))]
     fn parse_letter_notation_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(parse_letter_notation(input), Some(expected));
+        assert_eq!(parse_letter_notation(input).unwrap().value, expected);
     }
 
     #[rstest]
@@ -152,7 +141,7 @@ mod tests {
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_number_notation_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(parse_number_notation(input), Some(expected));
+        assert_eq!(parse_number_notation(input).unwrap().value, expected);
     }
 
     #[rstest]
@@ -169,7 +158,7 @@ mod tests {
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_note_test(#[case] input: &str, #[case] expected: MidiNote) {
         assert_eq!(
-            MidiNote::partial_from_str(input)
+            ParsedMidiNote::from_str(input)
                 .expect("Failed to parse valid note")
                 .value,
             expected
@@ -178,6 +167,6 @@ mod tests {
 
     #[test]
     fn parse_not_a_note() {
-        MidiNote::partial_from_str("nope.wav").unwrap_err();
+        ParsedMidiNote::from_str("nope.wav").unwrap_err();
     }
 }

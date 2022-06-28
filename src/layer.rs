@@ -1,8 +1,8 @@
-use std::ops::RangeInclusive;
+use std::{ops::RangeInclusive, str::FromStr};
 
 use music_note::midi::MidiNote;
 
-use crate::PartialFromStr;
+use crate::ParsedMidiNote;
 
 /// MPC keygroup layer.
 ///
@@ -65,6 +65,6 @@ impl Layer {
 
     /// Guess the root note of a layer.
     pub fn guess_root(&mut self) {
-        self.root = MidiNote::partial_from_str(&self.file).ok().map(|r| r.value);
+        self.root = ParsedMidiNote::from_str(&self.file).ok().map(|r| r.value);
     }
 }
