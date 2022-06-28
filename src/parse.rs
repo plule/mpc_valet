@@ -65,7 +65,7 @@ fn parse_number_notation(filename: &str) -> Option<MidiNote> {
 /// Try parsing a file with a letter notation (A2)
 fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     const REGEX: &str = rulex!(
-        (Start | !["A"-"Z" "a"-"z"]) :natural(["A"-"G" "a"-"g"]) :accidental(""|"#"|"b") :octave("-1" | range "0"-"9")
+        (Start | !["A"-"Z" "a"-"z"]) :natural(["A"-"G" "a"-"g"]) :accidental(""|"#"|"b") :octave("-1" | range "0"-"8")
     );
     lazy_static! {
         static ref RE: Regex = Regex::new(REGEX).expect("BUG: Invalid letter notation regex");
