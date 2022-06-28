@@ -6,7 +6,7 @@ use egui::{FontId, RichText, Widget};
 pub struct SaveProgramButton<'a> {
     pub program: &'a mut KeygroupProgram,
 
-    pub layer_mode: &'a mut LayerVelocityMode,
+    pub layer_mode: &'a LayerVelocityMode,
 
     pub last_error: &'a mut Result<()>,
 
@@ -17,7 +17,7 @@ pub struct SaveProgramButton<'a> {
 impl<'a> SaveProgramButton<'a> {
     pub fn new(
         program: &'a mut KeygroupProgram,
-        layer_mode: &'a mut LayerVelocityMode,
+        layer_mode: &'a LayerVelocityMode,
         last_error: &'a mut Result<()>,
     ) -> Self {
         Self {
@@ -98,17 +98,6 @@ impl<'a> SaveProgramButton<'a> {
 
 impl<'a> Widget for SaveProgramButton<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        if self.program.layer_count() >= 2 {
-            ui.selectable_value(
-                self.layer_mode,
-                LayerVelocityMode::Overlapping,
-                "Overlapping",
-            )
-            .on_hover_text("All the samples are always triggered.");
-            ui.selectable_value(self.layer_mode, LayerVelocityMode::Spread, "Spread")
-                .on_hover_text("Each sample is only triggered for a certain velocity range.");
-        }
-
         let button = ui
             .button(RichText::new("Save").font(FontId::proportional(20.0)))
             .on_disabled_hover_text("Add samples first")

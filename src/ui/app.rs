@@ -118,6 +118,7 @@ impl eframe::App for App {
                         ui.add(crate::ui::SamplesArea::new(
                             &mut self.program,
                             &mut self.pitch_preference,
+                            &mut self.layer_mode,
                             &mut self.current_layer,
                         ));
                         ui.separator();

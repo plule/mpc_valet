@@ -1,8 +1,9 @@
-use crate::KeygroupProgram;
+use crate::{KeygroupProgram, LayerVelocityMode};
 use egui::{FontId, RichText, Widget};
 pub struct SamplesArea<'a> {
     pub program: &'a mut KeygroupProgram,
     pub pitch_preference: &'a mut f32,
+    pub layer_mode: &'a mut LayerVelocityMode,
     pub current_layer: &'a mut usize,
 }
 
@@ -10,11 +11,13 @@ impl<'a> SamplesArea<'a> {
     pub fn new(
         program: &'a mut KeygroupProgram,
         pitch_preference: &'a mut f32,
+        layer_mode: &'a mut LayerVelocityMode,
         current_layer: &'a mut usize,
     ) -> Self {
         Self {
             program,
             pitch_preference,
+            layer_mode,
             current_layer,
         }
     }
@@ -49,12 +52,18 @@ impl<'a> Widget for SamplesArea<'a> {
                     table
                 })
                 .inner;
+            ui.separator();
             if ui
                 .add(crate::ui::PitchSlider::new(self.pitch_preference))
                 .changed()
             {
                 self.program.guess_ranges(*self.pitch_preference);
             }
+
+            ui.add(super::LayeringModeSelector::new(
+                self.layer_mode,
+                self.program.layer_count(),
+            ));
         }
         resp
     }
