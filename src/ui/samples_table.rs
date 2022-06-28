@@ -1,7 +1,10 @@
 use egui::{Color32, RichText, Widget};
-use music_note::midi::MidiNote;
+use music_note::{
+    midi::{MidiNote, Octave},
+    Pitch,
+};
 
-use crate::Keygroup;
+use crate::{Keygroup, StaticIterable};
 
 pub struct SamplesTable<'a> {
     pub keygroups: &'a mut Vec<Keygroup>,
@@ -107,14 +110,14 @@ impl<'a> Widget for SamplesTable<'a> {
                                     None => "⚠ ???".to_string(),
                                 };
                                 ui.menu_button(root_note_text, |ui| {
-                                    for octave in crate::OCTAVES {
+                                    for octave in Octave::iter() {
                                         ui.menu_button(format!("Octave {}", octave), |ui| {
-                                            for pitch in crate::PITCHES {
+                                            for pitch in Pitch::iter() {
                                                 if ui
                                                     .button(format!("{}{}", pitch, octave))
                                                     .clicked()
                                                 {
-                                                    let root = MidiNote::new(pitch, octave);
+                                                    let root = MidiNote::new(*pitch, *octave);
                                                     layer.root = Some(root);
                                                     resp.mark_changed();
                                                     ui.close_menu();

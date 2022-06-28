@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use egui::{Color32, Widget};
 use music_note::{midi::MidiNote, Pitch};
 
+use crate::StaticIterable;
+
 pub struct Keyboard {
     /// Color of each note
     pub note_colors: HashMap<u8, Color32>,
@@ -61,7 +63,7 @@ impl Widget for Keyboard {
                     egui::Sense::focusable_noninteractive(),
                 );
 
-                for note in crate::MIDI_NOTES.iter() {
+                for note in MidiNote::iter() {
                     match note.pitch() {
                         Pitch::B | Pitch::E => {
                             // Space between keys
@@ -84,7 +86,7 @@ impl Widget for Keyboard {
 
             // White keys
             ui.horizontal(|ui| {
-                for note in crate::MIDI_NOTES.iter() {
+                for note in MidiNote::iter() {
                     match note.pitch() {
                         Pitch::C
                         | Pitch::D

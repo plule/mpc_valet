@@ -4,7 +4,7 @@ pub mod export;
 mod keygroup;
 mod keygroup_program;
 mod layer;
-mod midi;
+mod midi_note_extensions;
 pub mod parse;
 mod range;
 mod ui;
@@ -12,7 +12,7 @@ mod ui;
 pub use keygroup::*;
 pub use keygroup_program::*;
 pub use layer::*;
-pub use midi::*;
+pub use midi_note_extensions::*;
 pub use range::*;
 pub use ui::App;
 
