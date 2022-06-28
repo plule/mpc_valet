@@ -1,4 +1,5 @@
 #![warn(clippy::all, rust_2018_idioms)]
+#![doc = include_str!("../README.md")]
 
 pub mod export;
 mod keygroup;
