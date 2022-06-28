@@ -4,9 +4,15 @@ use xmltree::EmitterConfig;
 
 use crate::{export, range, Keygroup, Layer, LayerVelocityMode};
 
+/// A keygroup program is an instrument based on samples.
+///
+/// It's split into multiple note range, each one in a Keygroup.
 #[derive(Debug)]
 pub struct KeygroupProgram {
+    /// Name of the keygroup program.
     pub name: String,
+
+    /// Keygroups making this program.
     pub keygroups: Vec<Keygroup>,
 }
 
@@ -20,6 +26,7 @@ impl Default for KeygroupProgram {
 }
 
 impl KeygroupProgram {
+    /// Add a set of files to the keygroup and try to be smart on the assignation.
     pub fn add_files(&mut self, layer: usize, files: HashSet<String>) {
         let existing_files: HashSet<String> = HashSet::from_iter(
             self.keygroups
@@ -51,10 +58,16 @@ impl KeygroupProgram {
         }
     }
 
+    /// Sort the keygroups of the program.
     fn sort_keygroups(&mut self) {
         self.keygroups.sort();
     }
 
+    /// Sort a layer of the program.
+    ///
+    /// The first layer is the one used to deduce note range, and is treated differently:
+    ///  - The first layer is just sorted using keygroups, so the other layer follow it
+    ///  - The other layers are sorted to try to match the ranges of the first layer
     pub fn sort_layer(&mut self, layer_index: usize) {
         match layer_index {
             0 => {
@@ -107,6 +120,11 @@ impl KeygroupProgram {
         }
     }
 
+    /// Based on the first layer, guess the ranges of each keygroup.
+    ///
+    /// The pitch preference should be between 0 and 1 and is used to choose between
+    /// pitching down or pitching up the samples. 0.5 means that each root note
+    /// will be at the "center" of its keygroup.
     pub fn guess_ranges(&mut self, pitch_preference: f32) {
         // keep only the keygroups with root note, and iterate in the root notes
         let (keygroups_with_root_note, root_notes): (Vec<_>, Vec<_>) = self

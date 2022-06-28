@@ -3,6 +3,12 @@ use xmltree::{Element, XMLNode};
 
 use crate::Keygroup;
 
+/// Trait for the ability to set a child member.
+///
+/// For example: `set_child_text("Hello", "World")` results in:
+/// <Hello>World</Hello>.
+///
+/// This construction is used a lot in MPC's XMLs.
 trait SetChildText {
     fn set_child_text(&mut self, child: &str, text: String) -> Result<()>;
 }
@@ -16,6 +22,7 @@ impl SetChildText for Element {
     }
 }
 
+/// Make this element content just text data.
 trait SetText {
     fn set_text(&mut self, text: String);
 }
@@ -27,6 +34,7 @@ impl SetText for Element {
     }
 }
 
+/// Export a keygroup program to an XML ready to be saved as .xpm.
 pub fn make_program<'a, I>(name: &str, keygroups: I) -> Result<Element>
 where
     I: IntoIterator<Item = &'a Keygroup>,

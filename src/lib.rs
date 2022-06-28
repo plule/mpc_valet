@@ -36,8 +36,12 @@ pub fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue> {
     eframe::start_web(canvas_id, Box::new(|cc| Box::new(App::new(cc))))
 }
 
+/// Velocity range assignment mode.
 #[derive(PartialEq)]
 pub enum LayerVelocityMode {
+    /// Set the full range to all the layers.
     Overlapping,
+
+    /// Assign non overlapping ranges to each layer.
     Spread,
 }

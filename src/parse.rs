@@ -27,6 +27,9 @@ where
     type Err;
 
     /// Try parsing a value from a string.
+    ///
+    /// On success the result contains both the parsed result and
+    /// an additional prefix and suffix.
     fn partial_from_str(s: &str) -> Result<Parsed<'_, Self>, Self::Err>;
 }
 
@@ -46,6 +49,7 @@ impl PartialFromStr for MidiNote {
     }
 }
 
+/// Try parsing a file with a number midi notation (0-127)
 fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
         static ref RE: Regex =
@@ -57,6 +61,7 @@ fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     Some(MidiNote::from(number))
 }
 
+/// Try parsing a file with a letter notation (A2)
 fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     lazy_static! {
         static ref RE: Regex = Regex::new(

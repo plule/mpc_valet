@@ -10,9 +10,15 @@ use random_color::{Luminosity, RandomColor};
 
 use crate::{Layer, LayerVelocityMode};
 
+/// A keygroup is a set of samples assign to a note range on a keyboard.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Keygroup {
+    /// Note range where this keygroup is active.
     pub range: Option<RangeInclusive<MidiNote>>,
+
+    /// Layers of the keygroup.
+    ///
+    /// Each layer can hold a sound sample and be of its own root note.
     pub layers: [Option<Layer>; 4],
 }
 
@@ -42,6 +48,7 @@ impl Keygroup {
         }
     }
 
+    /// Build a single layer keygroup from a file.
     pub fn from_file(file: String) -> Self {
         Self {
             range: None,
@@ -49,14 +56,17 @@ impl Keygroup {
         }
     }
 
+    /// Get the first layer with an assigned sample.
     pub fn first_assigned_layer(&self) -> Option<&Layer> {
         self.layers.iter().find_map(|layer| layer.as_ref())
     }
 
+    /// Get the first layer with an assigned sample (mutable).
     pub fn first_assigned_layer_mut(&mut self) -> Option<&mut Layer> {
         self.layers.iter_mut().find_map(|layer| layer.as_mut())
     }
 
+    /// Get a random stable color for this layer.
     pub fn color(&self) -> Color32 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         let layer = self.first_assigned_layer().cloned().unwrap_or_default();
@@ -69,10 +79,12 @@ impl Keygroup {
         Color32::from_rgb(color[0], color[1], color[2])
     }
 
+    /// Number of assigned layers.
     pub fn layer_count(&self) -> usize {
         self.layers.iter().filter_map(|l| l.as_ref()).count()
     }
 
+    /// Choose the way the velocity range should be assigned accross the layers.
     pub fn set_velocity_layer_mode(&mut self, mode: &LayerVelocityMode) {
         match mode {
             LayerVelocityMode::Overlapping => {
