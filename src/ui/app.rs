@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use super::Keyboard;
+use super::{Colored, Keyboard};
 use crate::{KeygroupProgram, LayerVelocityMode};
 use anyhow::Result;
 use egui::Visuals;

@@ -6,6 +6,8 @@ use music_note::{
 
 use crate::{Keygroup, StaticIterable};
 
+use super::Colored;
+
 pub struct SamplesTable<'a> {
     pub keygroups: &'a mut Vec<Keygroup>,
     pub current_layer: &'a mut usize,

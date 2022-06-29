@@ -1,12 +1,7 @@
-use std::{
-    hash::{Hash, Hasher},
-    ops::RangeInclusive,
-};
+use std::ops::RangeInclusive;
 
-use egui::Color32;
 use itertools::Itertools;
 use music_note::midi::MidiNote;
-use random_color::{Luminosity, RandomColor};
 
 use crate::{Layer, LayerVelocityMode};
 
@@ -64,19 +59,6 @@ impl Keygroup {
     /// Get the first layer with an assigned sample (mutable).
     pub fn first_assigned_layer_mut(&mut self) -> Option<&mut Layer> {
         self.layers.iter_mut().find_map(|layer| layer.as_mut())
-    }
-
-    /// Get a random stable color for this layer.
-    pub fn color(&self) -> Color32 {
-        let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        let layer = self.first_assigned_layer().cloned().unwrap_or_default();
-
-        layer.file.hash(&mut hasher);
-        let color = RandomColor::new()
-            .seed(hasher.finish())
-            .luminosity(Luminosity::Light)
-            .to_rgb_array();
-        Color32::from_rgb(color[0], color[1], color[2])
     }
 
     /// Number of assigned layers.
