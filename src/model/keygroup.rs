@@ -3,18 +3,27 @@ use std::ops::RangeInclusive;
 use itertools::Itertools;
 use music_note::midi::MidiNote;
 
-use crate::{Layer, LayerVelocityMode};
+use super::{Layer, LayerVelocityMode};
 
 /// A keygroup is a set of samples assign to a note range on a keyboard.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Keygroup {
     /// Note range where this keygroup is active.
-    pub range: Option<RangeInclusive<MidiNote>>,
+    pub range: RangeInclusive<MidiNote>,
 
     /// Layers of the keygroup.
     ///
     /// Each layer can hold a sound sample and be of its own root note.
     pub layers: [Option<Layer>; 4],
+}
+
+impl Default for Keygroup {
+    fn default() -> Self {
+        Self {
+            range: MidiNote::from_byte(0)..=MidiNote::from_byte(127),
+            layers: Default::default(),
+        }
+    }
 }
 
 impl PartialOrd for Keygroup {
@@ -37,18 +46,7 @@ impl Ord for Keygroup {
 
 impl Keygroup {
     pub fn new(range: RangeInclusive<MidiNote>, layers: [Option<Layer>; 4]) -> Self {
-        Self {
-            range: Some(range),
-            layers,
-        }
-    }
-
-    /// Build a single layer keygroup from a file.
-    pub fn from_file(file: String) -> Self {
-        Self {
-            range: None,
-            layers: [Some(Layer::from_file(file)), None, None, None],
-        }
+        Self { range, layers }
     }
 
     /// Get the first layer with an assigned sample.

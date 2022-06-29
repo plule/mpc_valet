@@ -1,36 +1,44 @@
-use anyhow::Context;
+use music_note::midi::MidiNote;
+use rulex_macro::rulex;
+
 use music_note::{
-    midi::{MidiNote, Octave},
+    midi::Octave,
     note::{Accidental, AccidentalKind, Flat, Sharp},
     Natural, Pitch,
 };
 use regex::Regex;
-use std::str::FromStr;
 
 use lazy_static::lazy_static;
-use rulex_macro::rulex;
 
-///! Note parsing module
-/// Parsed note with a layer identifier
-#[derive(Debug)]
-pub struct ParsedMidiNote {
-    pub value: MidiNote,
-    pub layer_identifier: String,
+/// A sample file with a root note.
+#[derive(PartialEq, Clone)]
+pub struct SampleFile {
+    /// Sample file (.wav)
+    pub file: String,
+
+    /// Root note
+    pub root: MidiNote,
 }
 
-impl FromStr for ParsedMidiNote {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let note = parse_letter_notation(s)
-            .or_else(|| parse_number_notation(s))
-            .context("Not a note")?;
-        Ok(note)
+impl From<String> for SampleFile {
+    fn from(value: String) -> Self {
+        let note = parse_letter_notation(&value).or_else(|| parse_number_notation(&value));
+        if let Some(note) = note {
+            return SampleFile {
+                file: value,
+                root: note,
+            };
+        }
+        SampleFile {
+            file: value,
+            // TODO report
+            root: MidiNote::from_byte(0),
+        }
     }
 }
 
 /// Try parsing a file with a number midi notation (0-127)
-fn parse_number_notation(filename: &str) -> Option<ParsedMidiNote> {
+fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     const REGEX: &str = rulex!(
         :value(range "0"-"127")
     );
@@ -42,14 +50,11 @@ fn parse_number_notation(filename: &str) -> Option<ParsedMidiNote> {
 
     let number = capture.name("value")?.as_str().parse::<u8>().ok()?;
 
-    Some(ParsedMidiNote {
-        layer_identifier: "".to_string(), // TODO
-        value: number.into(),
-    })
+    Some(number.into())
 }
 
 /// Try parsing a file with a letter notation (A2)
-fn parse_letter_notation(filename: &str) -> Option<ParsedMidiNote> {
+fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
     const REGEX: &str = rulex!(
         // Do not allow a letter just before the natural letter
         // It's likely an actual word
@@ -112,10 +117,7 @@ fn parse_letter_notation(filename: &str) -> Option<ParsedMidiNote> {
         _ => None,
     }?;
 
-    Some(ParsedMidiNote {
-        layer_identifier: "".to_string(), // TODO
-        value: MidiNote::new(pitch, octave),
-    })
+    Some(MidiNote::new(pitch, octave))
 }
 
 #[cfg(test)]
@@ -133,7 +135,7 @@ mod tests {
     #[case("MELCEL-F4.WAV", midi!(F,4))]
     #[case("de_1_d#5.wav", midi!(DSharp,5))]
     fn parse_letter_notation_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(parse_letter_notation(input).unwrap().value, expected);
+        assert_eq!(parse_letter_notation(input).unwrap(), expected);
     }
 
     #[rstest]
@@ -141,7 +143,7 @@ mod tests {
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_number_notation_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(parse_number_notation(input).unwrap().value, expected);
+        assert_eq!(parse_number_notation(input).unwrap(), expected);
     }
 
     #[rstest]
@@ -157,16 +159,6 @@ mod tests {
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_note_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(
-            ParsedMidiNote::from_str(input)
-                .expect("Failed to parse valid note")
-                .value,
-            expected
-        );
-    }
-
-    #[test]
-    fn parse_not_a_note() {
-        ParsedMidiNote::from_str("nope.wav").unwrap_err();
+        assert_eq!(SampleFile::from(input.to_string()).root, expected);
     }
 }

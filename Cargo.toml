@@ -8,36 +8,30 @@ readme = "README.md"
 repository = "https://github.com/plule/mpc_valet"
 license = "MIT OR Apache-2.0"
 
-[[bin]]
-name = "mpc_valet_bin"
-path = "src/main.rs"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
-
 [dependencies]
 music-note = "0.3.0"
 regex = "1"
 xmltree = "0.10.3"
-egui = "0.18.0"
-eframe = "0.18.0"
 lazy_static = "1.4.0"
 itertools = "0.10.3"
 anyhow = "1.0.57"
-random_color = "0.6.1"
 rulex-macro = "0.4.3"
+yew = "0.19"
+yew-utils = "0.2"
+log = "0.4.17"
+wasm-logger = "0.2.0"
+wasm-bindgen = "0.2.81"
+js-sys = "0.3.58"
 
-# native:
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-tracing-subscriber = "0.3"
-rfd = "0.9.1"
-
-# web:
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-console_error_panic_hook = "0.1.6"
-tracing-wasm = "0.2"
-js-sys = "0.3.57"
-web-sys = {version = "0.3.57", features = ["Document", "Window", "Node", "HtmlElement", "Element"]}
+[dependencies.web-sys]
+version = "0.3"
+features = [
+	"HtmlInputElement",
+	"DragEvent",
+	"DataTransfer",
+	"FileList",
+	"File",
+]
 
 [dev-dependencies]
 rstest = "0.15.0"

@@ -1,8 +1,6 @@
-use std::{ops::RangeInclusive, str::FromStr};
+use std::ops::RangeInclusive;
 
 use music_note::midi::MidiNote;
-
-use crate::ParsedMidiNote;
 
 /// MPC keygroup layer.
 ///
@@ -14,9 +12,7 @@ pub struct Layer {
     pub file: String,
 
     /// Root note
-    ///
-    /// None if failed to be deduced from the sample name.
-    pub root: Option<MidiNote>,
+    pub root: MidiNote,
 
     /// Velocity range where this layer should be active.
     pub velocity: RangeInclusive<u8>,
@@ -26,7 +22,7 @@ impl Default for Layer {
     fn default() -> Self {
         Self {
             file: Default::default(),
-            root: Default::default(),
+            root: MidiNote::from_byte(0),
             velocity: 0..=127,
         }
     }
@@ -48,23 +44,8 @@ impl Layer {
     pub fn new(file: String, root: MidiNote, velocity: RangeInclusive<u8>) -> Self {
         Self {
             file,
-            root: Some(root),
+            root,
             velocity,
         }
-    }
-
-    /// Build a layer from a file and guess its root note.
-    pub fn from_file(file: String) -> Self {
-        let mut layer = Self {
-            file,
-            ..Default::default()
-        };
-        layer.guess_root();
-        layer
-    }
-
-    /// Guess the root note of a layer.
-    pub fn guess_root(&mut self) {
-        self.root = ParsedMidiNote::from_str(&self.file).ok().map(|r| r.value);
     }
 }

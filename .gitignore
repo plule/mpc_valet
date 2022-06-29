@@ -1,3 +1,4 @@
 /target
+/dist
 docs/mpc_valet_bg.wasm
 docs/mpc_valet.js
