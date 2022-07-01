@@ -57,7 +57,7 @@ impl StaticIterable for Pitch {
 impl StaticIterable for MidiNote {
     fn iter() -> Iter<'static, Self> {
         lazy_static! {
-            static ref MIDI_NOTES: Vec<MidiNote> = (0..=127).map(|b| MidiNote::from(b)).collect();
+            static ref MIDI_NOTES: Vec<MidiNote> = (0..=127).map(MidiNote::from).collect();
         }
 
         MIDI_NOTES.iter()
