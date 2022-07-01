@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::io::Write;
 
 use super::{Colored, Keyboard};
 use crate::{KeygroupProgram, LayerVelocityMode};
@@ -169,14 +170,15 @@ fn preview_files_being_dropped(ctx: &egui::Context) {
     use egui::*;
 
     if !ctx.input().raw.hovered_files.is_empty() {
-        let mut text = "Dropping files:\n".to_owned();
+        let mut w = Vec::new();
+        writeln!(&mut w, "Dropping files:").unwrap();
         for file in &ctx.input().raw.hovered_files {
             if let Some(path) = &file.path {
-                text += &format!("\n{}", path.display());
+                writeln!(&mut w, "{}", path.display()).unwrap();
             } else if !file.mime.is_empty() {
-                text += &format!("\n{}", file.mime);
+                writeln!(&mut w, "{}", file.mime).unwrap();
             } else {
-                text += "\n???";
+                writeln!(&mut w, "???").unwrap();
             }
         }
 
@@ -188,7 +190,7 @@ fn preview_files_being_dropped(ctx: &egui::Context) {
         painter.text(
             screen_rect.center(),
             Align2::CENTER_CENTER,
-            text,
+            std::str::from_utf8(&w).unwrap(),
             TextStyle::Heading.resolve(&ctx.style()),
             Color32::WHITE,
         );
