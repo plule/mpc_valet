@@ -32,7 +32,7 @@ jobs:
       with:
         crate: trunk
     - name: Build for web
-      run: trunk build --release
+      run: trunk build --release --public-url mpc_valet
 
   test:
     name: test
@@ -90,7 +90,7 @@ jobs:
       with:
         crate: trunk
     - name: Build for web
-      run: trunk build --release
+      run: trunk build --release --public-url mpc_valet
     - name: Deploy to github pages
       uses: JamesIves/github-pages-deploy-action@v4.3.0
       with:
