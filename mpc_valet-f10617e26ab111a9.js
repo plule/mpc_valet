@@ -587,7 +587,7 @@ function initSync(bytes) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('mpc_valet-8fae328799795ab9_bg.wasm', import.meta.url);
+        input = new URL('mpc_valet-f10617e26ab111a9_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
