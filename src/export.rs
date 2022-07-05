@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use xmltree::{Element, XMLNode};
 
-use crate::Keygroup;
+use crate::model::Keygroup;
 
 /// Trait for the ability to set a child member.
 ///
@@ -60,10 +60,7 @@ where
         num_keygroups += 1;
         let mut program_keygroup = reference_keygroup.clone();
         let keygroup_number = num_keygroups;
-        let range = keygroup
-            .range
-            .as_ref()
-            .context("Attempted to export a program with missing ranges")?;
+        let range = &keygroup.range;
 
         let low_note = range.start().into_byte() as u32;
         let high_note = range.end().into_byte() as u32;
@@ -110,11 +107,8 @@ where
                 program_layer.set_child_text("SampleFile", sample_file)?;
                 program_layer.set_child_text("VelStart", velocity_start)?;
                 program_layer.set_child_text("VelEnd", velocity_end)?;
-
-                if let Some(root_note) = layer.root {
-                    let root_note = (root_note.into_byte() as u32) + 1; // off by one in the file format
-                    program_layer.set_child_text("RootNote", root_note.to_string())?;
-                }
+                let root_note = (layer.root.into_byte() as u32) + 1; // off by one in the file format
+                program_layer.set_child_text("RootNote", root_note.to_string())?;
             }
         }
 
@@ -132,7 +126,7 @@ where
 mod tests {
     use music_note::midi::MidiNote;
 
-    use crate::Layer;
+    use crate::model::Layer;
 
     pub use super::*;
 
