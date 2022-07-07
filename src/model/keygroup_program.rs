@@ -3,7 +3,7 @@ use music_note::midi::MidiNote;
 use std::io::Write;
 use xmltree::EmitterConfig;
 
-use crate::{export, range};
+use crate::utils::{build_ranges, make_program};
 
 use super::{Keygroup, Layer, LayerFile, LayerVelocityMode};
 
@@ -78,7 +78,7 @@ impl KeygroupProgram {
             .unzip();
 
         // guess the ranges from the root notes
-        let ranges = range::build_ranges(&root_notes, pitch_preference);
+        let ranges = build_ranges(&root_notes, pitch_preference);
 
         // assign the ranges to the keygroups with root notes
         for (kg, range) in keygroups_with_root_note.into_iter().zip(ranges.into_iter()) {
@@ -87,7 +87,7 @@ impl KeygroupProgram {
     }
 
     pub fn export<W: Write>(&self, w: W) -> Result<()> {
-        let program = export::make_program(&self.name, &self.keygroups)?;
+        let program = make_program(&self.name, &self.keygroups)?;
         let mut cfg = EmitterConfig::new();
         cfg.perform_indent = true;
 

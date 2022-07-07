@@ -1,4 +1,4 @@
-use crate::{model::Keygroup, StaticIterable};
+use crate::{model::Keygroup, utils::StaticIterable};
 use itertools::Itertools;
 use music_note::{midi::MidiNote, Pitch};
 use yew::prelude::*;

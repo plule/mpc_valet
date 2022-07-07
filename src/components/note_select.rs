@@ -4,7 +4,7 @@ use music_note::midi::MidiNote;
 use yew::{html, Callback, Component, Properties};
 use yew_utils::components::drop_down::DropDown;
 
-use crate::StaticIterable;
+use crate::utils::StaticIterable;
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct NoteSelectProps {
