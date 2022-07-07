@@ -1,5 +1,6 @@
 use crate::components::LayerSelect;
 use crate::model::LayerFile;
+use itertools::Itertools;
 use yew::{html, Callback, Component, Context, Html, Properties};
 
 use crate::model::SampleFile;
@@ -25,7 +26,6 @@ pub enum LayerSelectFormMessages {
 #[derive(Default)]
 pub struct LayerSelectForm {
     pub layer_files: Vec<LayerFile>,
-    pub all_layers_init: Option<usize>,
 }
 
 impl Component for LayerSelectForm {
@@ -35,7 +35,6 @@ impl Component for LayerSelectForm {
     fn create(ctx: &Context<Self>) -> Self {
         Self {
             layer_files: ctx.props().files.iter().map(|f| f.clone().into()).collect(),
-            all_layers_init: None,
         }
     }
 
@@ -43,12 +42,10 @@ impl Component for LayerSelectForm {
         match msg {
             LayerSelectFormMessages::LayerChanged(index, layer) => {
                 self.layer_files[index].layer = layer;
-                self.all_layers_init = None;
                 true
             }
             LayerSelectFormMessages::AllLayerChanged(layer) => {
                 self.layer_files.iter_mut().for_each(|l| l.layer = layer);
-                self.all_layers_init = Some(layer);
                 true
             }
             LayerSelectFormMessages::Ok => {
@@ -78,6 +75,18 @@ impl Component for LayerSelectForm {
             })
             .collect();
 
+        let used_layers: Vec<usize> = self
+            .layer_files
+            .iter()
+            .map(|f| f.layer)
+            .unique()
+            .collect_vec();
+
+        let all_layers = match used_layers.len() {
+            1 => Some(used_layers[0]),
+            _ => None,
+        };
+
         html! {
             <div class="modal is-active">
                 <div class="modal-background"></div>
@@ -90,7 +99,7 @@ impl Component for LayerSelectForm {
                         <div class="tile is-ancestor is-vertical">
                             <LayerSelect
                                 label={"All"}
-                                initial={self.all_layers_init}
+                                initial={all_layers}
                                 selection_changed={ctx.link().callback(LayerSelectFormMessages::AllLayerChanged)}
                             />
                             {samples}
