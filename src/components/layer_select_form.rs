@@ -33,9 +33,11 @@ impl Component for LayerSelectForm {
     type Properties = LayerSelectFormProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            layer_files: ctx.props().files.iter().map(|f| f.clone().into()).collect(),
-        }
+        let mut s = Self {
+            layer_files: vec![],
+        };
+        s.changed(ctx);
+        s
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -115,7 +117,28 @@ impl Component for LayerSelectForm {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        self.layer_files = ctx.props().files.iter().map(|f| f.clone().into()).collect();
+        // Initiate the list of layer files from the list of files with roots
+        self.layer_files = ctx
+            .props()
+            .files
+            .iter()
+            // Sort by root note (group_by needs it)
+            .sorted_by(|a, b| a.root.cmp(&b.root))
+            // group by root note
+            .group_by(|f| f.root.into_byte())
+            .into_iter()
+            .map(|(_, group)| {
+                group
+                    // Sort each note with the same root per file name
+                    .sorted_by(|a, b| a.file.cmp(&b.file))
+                    .enumerate()
+                    // Assign a different layer to each note with the same root,
+                    // based on the sample alphabetical order
+                    .map(|(index, file)| LayerFile::from_sample_file(file.clone(), index % 4))
+            })
+            .flatten()
+            .sorted_by(|a, b| a.file.cmp(&b.file))
+            .collect();
         true
     }
 }

@@ -15,6 +15,16 @@ pub struct LayerFile {
     pub layer: usize,
 }
 
+impl LayerFile {
+    pub fn from_sample_file(file: SampleFile, layer: usize) -> Self {
+        Self {
+            file: file.file,
+            root: file.root,
+            layer,
+        }
+    }
+}
+
 impl From<SampleFile> for LayerFile {
     fn from(file: SampleFile) -> Self {
         Self {
