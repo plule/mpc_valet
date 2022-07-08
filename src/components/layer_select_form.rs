@@ -53,10 +53,12 @@ impl Component for LayerSelectForm {
             }
             LayerSelectFormMessages::Swap(layer1, layer2) => {
                 self.layer_files.iter_mut().for_each(|f| {
-                    f.layer = match (f.layer, layer1, layer2) {
-                        _ if f.layer == layer1 => layer2,
-                        _ if f.layer == layer2 => layer1,
-                        _ => f.layer,
+                    f.layer = if f.layer == layer1 {
+                        layer2
+                    } else if f.layer == layer2 {
+                        layer1
+                    } else {
+                        f.layer
                     };
                 });
                 true
