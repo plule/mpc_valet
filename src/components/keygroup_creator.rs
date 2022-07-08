@@ -127,7 +127,7 @@ impl Component for KeygroupCreator {
                 <Keyboard keygroups={self.program.keygroups.clone()} highlight_keygroup={self.highlight_keygroup} />
                 <TuningForm
                     pitch_preference_init=0.5
-                    layer_velocity_mode_init={LayerVelocityMode::Spread}
+                    layer_velocity_mode_init={LayerVelocityMode::Automatic}
                     on_pitch_preference_change={ctx.link().callback(Msg::PitchPreference)}
                     on_save={ctx.link().callback(Msg::Save)}
                 />

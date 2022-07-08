@@ -92,10 +92,10 @@ impl Component for TuningForm {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let layer_help_text = match self.tuning.layer_velocity_mode {
-            LayerVelocityMode::Spread => {
+            LayerVelocityMode::Automatic => {
                 "Each layer will only be used for a range of the velocity."
             }
-            LayerVelocityMode::Overlapping => "All the layers will play at the same time.",
+            LayerVelocityMode::Unison => "All the layers will play at the same time.",
         };
         html! {
             <div class="box">
@@ -120,7 +120,7 @@ impl Component for TuningForm {
                             <div class="select">
                                 <DropDown<LayerVelocityMode>
                                     initial={ctx.props().layer_velocity_mode_init}
-                                    options={vec![LayerVelocityMode::Overlapping, LayerVelocityMode::Spread]}
+                                    options={vec![LayerVelocityMode::Unison, LayerVelocityMode::Automatic]}
                                     selection_changed={ctx.link().callback(TuningFormMessages::LayerVelocityModeChange)}
                                 />
                             </div>

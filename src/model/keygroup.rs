@@ -67,12 +67,12 @@ impl Keygroup {
     /// Choose the way the velocity range should be assigned accross the layers.
     pub fn set_velocity_layer_mode(&mut self, mode: &LayerVelocityMode) {
         match mode {
-            LayerVelocityMode::Overlapping => {
+            LayerVelocityMode::Unison => {
                 for layer in self.layers.iter_mut().filter_map(|l| l.as_mut()) {
                     layer.velocity = 0..=127;
                 }
             }
-            LayerVelocityMode::Spread => {
+            LayerVelocityMode::Automatic => {
                 let active_layers = self
                     .layers
                     .iter_mut()
@@ -137,27 +137,27 @@ mod tests {
     )]
     fn layer_velocity_test(
         #[case] layers: [Option<Layer>; 4],
-        #[case] spread_velocity: [Option<RangeInclusive<u8>>; 4],
-        #[case] overlap_velocity: [Option<RangeInclusive<u8>>; 4],
+        #[case] automatic_velocity: [Option<RangeInclusive<u8>>; 4],
+        #[case] unison_velocity: [Option<RangeInclusive<u8>>; 4],
     ) {
         let mut kg = Keygroup::new(midi!(A, 2)..=midi!(A, 3), layers);
 
-        kg.set_velocity_layer_mode(&LayerVelocityMode::Spread);
+        kg.set_velocity_layer_mode(&LayerVelocityMode::Automatic);
 
-        let actual_spread_velocity = kg
+        let actual_automatic_velocity = kg
             .layers
             .clone()
             .map(|layer| -> Option<RangeInclusive<u8>> { Some(layer?.velocity) });
 
-        assert_eq!(spread_velocity, actual_spread_velocity);
+        assert_eq!(automatic_velocity, actual_automatic_velocity);
 
-        kg.set_velocity_layer_mode(&LayerVelocityMode::Overlapping);
+        kg.set_velocity_layer_mode(&LayerVelocityMode::Unison);
 
-        let actual_overlap_velocity = kg
+        let actual_unison_velocity = kg
             .layers
             .clone()
             .map(|layer| -> Option<RangeInclusive<u8>> { Some(layer?.velocity) });
 
-        assert_eq!(overlap_velocity, actual_overlap_velocity);
+        assert_eq!(unison_velocity, actual_unison_velocity);
     }
 }
