@@ -53,11 +53,11 @@ impl Component for LayerSelectForm {
             }
             LayerSelectFormMessages::Swap(layer1, layer2) => {
                 self.layer_files.iter_mut().for_each(|f| {
-                    if f.layer == layer1 {
-                        f.layer = layer2;
-                    } else if f.layer == layer2 {
-                        f.layer = layer1;
-                    }
+                    f.layer = match (f.layer, layer1, layer2) {
+                        _ if f.layer == layer1 => layer2,
+                        _ if f.layer == layer2 => layer1,
+                        _ => f.layer,
+                    };
                 });
                 true
             }
@@ -166,7 +166,7 @@ impl Component for LayerSelectForm {
             // group by root note
             .group_by(|f| f.root.into_byte())
             .into_iter()
-            .map(|(_, group)| {
+            .flat_map(|(_, group)| {
                 group
                     // Sort each note with the same root per file name
                     .sorted_by(|a, b| a.file.cmp(&b.file))
@@ -175,7 +175,6 @@ impl Component for LayerSelectForm {
                     // based on the sample alphabetical order
                     .map(|(index, file)| LayerFile::from_sample_file(file.clone(), index % 4))
             })
-            .flatten()
             .sorted_by(|a, b| a.file.cmp(&b.file))
             .collect();
         true
