@@ -105,6 +105,9 @@ impl Component for LayerSelectForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
+                        <span class="icon">
+                            <ion-icon name="layers"></ion-icon>
+                        </span>
                         <p class="modal-card-title">{"Select layers"}</p>
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}></button>
                     </header>

@@ -86,6 +86,9 @@ impl Component for RootNotesForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
+                        <span class="icon">
+                            <ion-icon name="musical-notes"></ion-icon>
+                        </span>
                         <p class="modal-card-title">{"Select root notes"}</p>
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}></button>
                     </header>
