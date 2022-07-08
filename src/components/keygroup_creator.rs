@@ -115,7 +115,7 @@ impl Component for KeygroupCreator {
                             <input class="file-input" type="file" name="samples" multiple=true accept=".wav" oninput={KeygroupCreator::on_file_input(ctx)} />
                             <span class="file-cta">
                                 <span class="file-icon">
-                                    <i class="fas fa-upload"></i>
+                                    <ion-icon name="add-circle"></ion-icon>
                                 </span>
                                 <span class="file-label">
                                     {"Add Samples..."}

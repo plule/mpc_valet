@@ -18,6 +18,7 @@ pub struct LayerSelectFormProps {
 pub enum LayerSelectFormMessages {
     LayerChanged(usize, usize),
     AllLayerChanged(usize),
+    Swap(usize, usize),
     Ok,
     Cancel,
 }
@@ -48,6 +49,16 @@ impl Component for LayerSelectForm {
             }
             LayerSelectFormMessages::AllLayerChanged(layer) => {
                 self.layer_files.iter_mut().for_each(|l| l.layer = layer);
+                true
+            }
+            LayerSelectFormMessages::Swap(layer1, layer2) => {
+                self.layer_files.iter_mut().for_each(|f| {
+                    if f.layer == layer1 {
+                        f.layer = layer2;
+                    } else if f.layer == layer2 {
+                        f.layer = layer1;
+                    }
+                });
                 true
             }
             LayerSelectFormMessages::Ok => {
@@ -98,13 +109,38 @@ impl Component for LayerSelectForm {
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}></button>
                     </header>
                     <section class="modal-card-body">
-                        <div class="tile is-ancestor is-vertical">
-                            <LayerSelect
-                                label={"All"}
-                                initial={all_layers}
-                                selection_changed={ctx.link().callback(LayerSelectFormMessages::AllLayerChanged)}
-                            />
-                            {samples}
+                        <LayerSelect
+                            label={"All"}
+                            initial={all_layers}
+                            selection_changed={ctx.link().callback(LayerSelectFormMessages::AllLayerChanged)}
+                        />
+                        {samples}
+                        <div class="columns">
+                            <div class="column is-one-quarter">
+                                {"Swap Layers"}
+                            </div>
+                            <div class="column">
+                                <div class="buttons has-addons is-centered">
+                                    <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(0,1))}>
+                                        <span class="icon">
+                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
+                                        </span>
+                                        <span>{"Swap 1-2"}</span>
+                                    </button>
+                                    <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(1,2))}>
+                                        <span class="icon">
+                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
+                                        </span>
+                                        <span>{"Swap 2-3"}</span>
+                                    </button>
+                                    <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(2,3))}>
+                                        <span class="icon">
+                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
+                                        </span>
+                                        <span>{"Swap 3-4"}</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </section>
                     <footer class="modal-card-foot">

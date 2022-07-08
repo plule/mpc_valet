@@ -48,12 +48,12 @@ impl Component for LayerSelect {
         }).collect();
 
         html! {
-            <div class="tile">
-                <div class="tile is-4">
+            <div class="columns">
+                <div class="column is-one-quarter">
                     {label}
                 </div>
-                <div class="tile">
-                    <div class="buttons has-addons">
+                <div class="column">
+                    <div class="buttons has-addons is-centered">
                         {buttons}
                     </div>
                 </div>
