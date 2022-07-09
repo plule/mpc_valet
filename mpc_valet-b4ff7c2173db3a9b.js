@@ -388,12 +388,22 @@ function getImports() {
         getInt32Memory0()[arg0 / 4 + 1] = len0;
         getInt32Memory0()[arg0 / 4 + 0] = ptr0;
     }, arguments) };
+    imports.wbg.__wbg_removeItem_6d8d7a1539920d51 = function() { return handleError(function (arg0, arg1, arg2) {
+        getObject(arg0).removeItem(getStringFromWasm0(arg1, arg2));
+    }, arguments) };
     imports.wbg.__wbg_setItem_04c4ba5c4a9c337f = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
         getObject(arg0).setItem(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
     }, arguments) };
+    imports.wbg.__wbg_instanceof_HtmlSelectElement_836066b5c2058eac = function(arg0) {
+        const ret = getObject(arg0) instanceof HTMLSelectElement;
+        return ret;
+    };
     imports.wbg.__wbg_selectedIndex_17ea29e6916176b5 = function(arg0) {
         const ret = getObject(arg0).selectedIndex;
         return ret;
+    };
+    imports.wbg.__wbg_setvalue_6e17cb091c85e34f = function(arg0, arg1, arg2) {
+        getObject(arg0).value = getStringFromWasm0(arg1, arg2);
     };
     imports.wbg.__wbg_value_92e4233a8e4ce8c1 = function(arg0, arg1) {
         const ret = getObject(arg1).value;
@@ -580,8 +590,8 @@ function getImports() {
     imports.wbg.__wbindgen_throw = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbindgen_closure_wrapper1848 = function(arg0, arg1, arg2) {
-        const ret = makeClosure(arg0, arg1, 763, __wbg_adapter_20);
+    imports.wbg.__wbindgen_closure_wrapper1852 = function(arg0, arg1, arg2) {
+        const ret = makeClosure(arg0, arg1, 748, __wbg_adapter_20);
         return addHeapObject(ret);
     };
 
@@ -617,7 +627,7 @@ function initSync(bytes) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('mpc_valet-5e525bc89bf54397_bg.wasm', import.meta.url);
+        input = new URL('mpc_valet-b4ff7c2173db3a9b_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
