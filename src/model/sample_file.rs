@@ -9,9 +9,10 @@ use music_note::{
 use regex::Regex;
 
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 
 /// A sample file with a root note.
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
 pub struct SampleFile {
     /// Sample file (.wav)
     pub file: String,

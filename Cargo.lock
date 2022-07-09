@@ -338,6 +338,8 @@ dependencies = [
  "regex",
  "rstest",
  "rulex-macro",
+ "serde",
+ "serde_json",
  "wasm-bindgen",
  "wasm-logger",
  "web-sys",

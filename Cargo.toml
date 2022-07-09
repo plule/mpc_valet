@@ -22,6 +22,8 @@ log = "0.4.17"
 wasm-logger = "0.2.0"
 wasm-bindgen = "0.2.81"
 js-sys = "0.3.58"
+serde = "1"
+serde_json = "1"
 
 [dependencies.web-sys]
 version = "0.3"

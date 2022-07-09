@@ -1,10 +1,12 @@
 use std::ops::RangeInclusive;
 
+use serde::{Deserialize, Serialize};
+
 /// MPC keygroup layer.
 ///
 /// Each layer is an assigned file with a root note and a velocity
 /// range where it is active.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Layer {
     /// Sample file
     pub file: String,

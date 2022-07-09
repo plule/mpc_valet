@@ -1,11 +1,12 @@
 use std::ops::RangeInclusive;
 
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
 use super::{Layer, LayerVelocityMode};
 
 /// A keygroup is a set of samples assign to a note range on a keyboard.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Keygroup {
     /// Note range where this keygroup is active.
     pub range: RangeInclusive<u8>,

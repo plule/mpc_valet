@@ -1,4 +1,5 @@
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use xmltree::EmitterConfig;
 
@@ -9,7 +10,7 @@ use super::{Keygroup, Layer, LayerFile, LayerVelocityMode};
 /// A keygroup program is an instrument based on samples.
 ///
 /// It's split into multiple note range, each one in a Keygroup.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KeygroupProgram {
     /// Name of the keygroup program.
     pub name: String,
