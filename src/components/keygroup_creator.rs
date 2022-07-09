@@ -80,7 +80,7 @@ impl Component for KeygroupCreator {
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        let updated = match msg {
+        let redraw = match msg {
             Msg::Reset => {
                 *self = Self::default();
                 true
@@ -132,7 +132,7 @@ impl Component for KeygroupCreator {
             log::error!("{e}");
         });
 
-        updated
+        redraw
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
