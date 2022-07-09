@@ -1,6 +1,7 @@
 use crate::components::NoteSelect;
-use log::debug;
+use gloo_storage::{LocalStorage, Storage};
 use music_note::midi::MidiNote;
+use serde::{Deserialize, Serialize};
 use yew::{html, Callback, Component, Context, Html, Properties};
 
 use crate::model::SampleFile;
@@ -11,7 +12,7 @@ pub struct RootNoteFormProps {
     pub files: Vec<String>,
 
     #[prop_or_default]
-    pub on_selected: Callback<Vec<SampleFile>>,
+    pub on_done: Callback<Vec<SampleFile>>,
 
     #[prop_or_default]
     pub on_cancel: Callback<()>,
@@ -19,14 +20,23 @@ pub struct RootNoteFormProps {
 
 pub enum RootNoteFormMessages {
     RootNoteChanged(usize, MidiNote),
-    Ok,
+    Done,
+    Reset,
     Cancel,
 }
 
 /// Root note selector for a list of sample files.
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct RootNotesForm {
     pub sample_files: Vec<SampleFile>,
+}
+
+impl From<Vec<String>> for RootNotesForm {
+    fn from(files: Vec<String>) -> Self {
+        Self {
+            sample_files: files.into_iter().map(|f| f.into()).collect(),
+        }
+    }
 }
 
 impl Component for RootNotesForm {
@@ -34,27 +44,34 @@ impl Component for RootNotesForm {
     type Properties = RootNoteFormProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        debug!("recreating root note form");
-        Self {
-            sample_files: ctx.props().files.iter().map(|f| f.clone().into()).collect(),
-        }
+        LocalStorage::get("root_note_form").unwrap_or_else(|_| ctx.props().files.clone().into())
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
+        let redraw = match msg {
             RootNoteFormMessages::RootNoteChanged(index, note) => {
                 self.sample_files[index].root = note.into_byte();
                 true
             }
-            RootNoteFormMessages::Ok => {
-                ctx.props().on_selected.emit(self.sample_files.clone());
+            RootNoteFormMessages::Done => {
+                ctx.props().on_done.emit(self.sample_files.clone());
                 false
             }
             RootNoteFormMessages::Cancel => {
                 ctx.props().on_cancel.emit(());
                 false
             }
-        }
+            RootNoteFormMessages::Reset => {
+                *self = ctx.props().files.clone().into();
+                true
+            }
+        };
+
+        LocalStorage::set("root_note_form", self).unwrap_or_else(|e| {
+            log::error!("{e}");
+        });
+
+        redraw
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -71,7 +88,7 @@ impl Component for RootNotesForm {
                         <div class="tile">
                             <div class="control select">
                                 <NoteSelect
-                                    initial={MidiNote::from_byte(sample.root)}
+                                    value={MidiNote::from_byte(sample.root)}
                                     selection_changed={ctx.link().callback(move |root: MidiNote| RootNoteFormMessages::RootNoteChanged(index, root))}
                                 />
                             </div>
@@ -98,8 +115,11 @@ impl Component for RootNotesForm {
                         </div>
                     </section>
                     <footer class="modal-card-foot">
-                        <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Ok)}>{"Ok"}</button>
-                        <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>{"Cancel"}</button>
+                        <div class="buttons has-addons">
+                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>{"Cancel"}</button>
+                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>{"Reset"}</button>
+                            <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Done)}>{"Next"}</button>
+                        </div>
                     </footer>
                 </div>
             </div>
@@ -107,7 +127,11 @@ impl Component for RootNotesForm {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        self.sample_files = ctx.props().files.iter().map(|f| f.clone().into()).collect();
+        *self = ctx.props().files.clone().into();
         true
+    }
+
+    fn destroy(&mut self, _ctx: &Context<Self>) {
+        LocalStorage::delete("root_note_form");
     }
 }

@@ -183,7 +183,7 @@ impl KeygroupCreator {
             FileAddition::FileList(files) => html! {
                 <RootNotesForm
                     files={files.clone()}
-                    on_selected={ctx.link().callback(Msg::RootNoteSelected)}
+                    on_done={ctx.link().callback(Msg::RootNoteSelected)}
                     on_cancel={ctx.link().callback(|_| Msg::ClearDroppedFiles)}
                 />
             },

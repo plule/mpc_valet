@@ -1,6 +1,8 @@
 use crate::components::LayerSelect;
 use crate::model::LayerFile;
+use gloo_storage::{LocalStorage, Storage};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use yew::{html, Callback, Component, Context, Html, Properties};
 
 use crate::model::SampleFile;
@@ -19,14 +21,40 @@ pub enum LayerSelectFormMessages {
     LayerChanged(usize, usize),
     AllLayerChanged(usize),
     Swap(usize, usize),
-    Ok,
+    Done,
+    Reset,
     Cancel,
 }
 
 /// Select the layer for a list of sample files.
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct LayerSelectForm {
     pub layer_files: Vec<LayerFile>,
+}
+
+impl From<Vec<SampleFile>> for LayerSelectForm {
+    fn from(sample_files: Vec<SampleFile>) -> Self {
+        // Initiate the list of layer files from the list of files with roots
+        let layer_files: Vec<LayerFile> = sample_files
+            .iter()
+            // Sort by root note (group_by needs it)
+            .sorted_by(|a, b| a.root.cmp(&b.root))
+            // group by root note
+            .group_by(|f| f.root)
+            .into_iter()
+            .flat_map(|(_, group)| {
+                group
+                    // Sort each note with the same root per file name
+                    .sorted_by(|a, b| a.file.cmp(&b.file))
+                    .enumerate()
+                    // Assign a different layer to each note with the same root,
+                    // based on the sample alphabetical order
+                    .map(|(index, file)| LayerFile::from_sample_file(file.clone(), index % 4))
+            })
+            .sorted_by(|a, b| a.file.cmp(&b.file))
+            .collect();
+        Self { layer_files }
+    }
 }
 
 impl Component for LayerSelectForm {
@@ -34,15 +62,11 @@ impl Component for LayerSelectForm {
     type Properties = LayerSelectFormProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let mut s = Self {
-            layer_files: vec![],
-        };
-        s.changed(ctx);
-        s
+        LocalStorage::get("layer_select_form").unwrap_or_else(|_| ctx.props().files.clone().into())
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
+        let redraw = match msg {
             LayerSelectFormMessages::LayerChanged(index, layer) => {
                 self.layer_files[index].layer = layer;
                 true
@@ -63,15 +87,24 @@ impl Component for LayerSelectForm {
                 });
                 true
             }
-            LayerSelectFormMessages::Ok => {
+            LayerSelectFormMessages::Done => {
                 ctx.props().on_selected.emit(self.layer_files.clone());
                 false
             }
+
             LayerSelectFormMessages::Cancel => {
                 ctx.props().on_cancel.emit(());
                 false
             }
-        }
+            LayerSelectFormMessages::Reset => {
+                *self = ctx.props().files.clone().into();
+                true
+            }
+        };
+        LocalStorage::set("layer_select_form", self).unwrap_or_else(|e| {
+            log::error!("{e}");
+        });
+        redraw
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -149,8 +182,11 @@ impl Component for LayerSelectForm {
                         </div>
                     </section>
                     <footer class="modal-card-foot">
-                        <button class="button is-success" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Ok)}>{"Ok"}</button>
-                        <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}>{"Cancel"}</button>
+                        <div class="buttons has-addons">
+                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}>{"Cancel"}</button>
+                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Reset)}>{"Reset"}</button>
+                            <button class="button is-success" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Done)}>{"Ok"}</button>
+                        </div>
                     </footer>
                 </div>
             </div>
@@ -158,27 +194,7 @@ impl Component for LayerSelectForm {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        // Initiate the list of layer files from the list of files with roots
-        self.layer_files = ctx
-            .props()
-            .files
-            .iter()
-            // Sort by root note (group_by needs it)
-            .sorted_by(|a, b| a.root.cmp(&b.root))
-            // group by root note
-            .group_by(|f| f.root)
-            .into_iter()
-            .flat_map(|(_, group)| {
-                group
-                    // Sort each note with the same root per file name
-                    .sorted_by(|a, b| a.file.cmp(&b.file))
-                    .enumerate()
-                    // Assign a different layer to each note with the same root,
-                    // based on the sample alphabetical order
-                    .map(|(index, file)| LayerFile::from_sample_file(file.clone(), index % 4))
-            })
-            .sorted_by(|a, b| a.file.cmp(&b.file))
-            .collect();
+        *self = ctx.props().files.clone().into();
         true
     }
 }
