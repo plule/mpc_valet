@@ -17,7 +17,7 @@ pub struct SampleFile {
     pub file: String,
 
     /// Root note
-    pub root: MidiNote,
+    pub root: u8,
 }
 
 impl From<String> for SampleFile {
@@ -26,13 +26,13 @@ impl From<String> for SampleFile {
         if let Some(note) = note {
             return SampleFile {
                 file: value,
-                root: note,
+                root: note.into_byte(),
             };
         }
         SampleFile {
             file: value,
             // TODO report
-            root: MidiNote::from_byte(0),
+            root: 0,
         }
     }
 }
@@ -159,6 +159,9 @@ mod tests {
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
     fn parse_note_test(#[case] input: &str, #[case] expected: MidiNote) {
-        assert_eq!(SampleFile::from(input.to_string()).root, expected);
+        assert_eq!(
+            SampleFile::from(input.to_string()).root,
+            expected.into_byte()
+        );
     }
 }

@@ -1,7 +1,6 @@
 use std::ops::RangeInclusive;
 
 use itertools::Itertools;
-use music_note::midi::MidiNote;
 
 use super::{Layer, LayerVelocityMode};
 
@@ -9,7 +8,7 @@ use super::{Layer, LayerVelocityMode};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Keygroup {
     /// Note range where this keygroup is active.
-    pub range: RangeInclusive<MidiNote>,
+    pub range: RangeInclusive<u8>,
 
     /// Layers of the keygroup.
     ///
@@ -20,7 +19,7 @@ pub struct Keygroup {
 impl Default for Keygroup {
     fn default() -> Self {
         Self {
-            range: MidiNote::from_byte(0)..=MidiNote::from_byte(127),
+            range: 0..=127,
             layers: Default::default(),
         }
     }
@@ -45,7 +44,7 @@ impl Ord for Keygroup {
 }
 
 impl Keygroup {
-    pub fn new(range: RangeInclusive<MidiNote>, layers: [Option<Layer>; 4]) -> Self {
+    pub fn new(range: RangeInclusive<u8>, layers: [Option<Layer>; 4]) -> Self {
         Self { range, layers }
     }
 
@@ -140,7 +139,7 @@ mod tests {
         #[case] automatic_velocity: [Option<RangeInclusive<u8>>; 4],
         #[case] unison_velocity: [Option<RangeInclusive<u8>>; 4],
     ) {
-        let mut kg = Keygroup::new(midi!(A, 2)..=midi!(A, 3), layers);
+        let mut kg = Keygroup::new(midi!(A, 2).into_byte()..=midi!(A, 3).into_byte(), layers);
 
         kg.set_velocity_layer_mode(&LayerVelocityMode::Automatic);
 

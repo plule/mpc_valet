@@ -1,7 +1,5 @@
 use std::ops::RangeInclusive;
 
-use music_note::midi::MidiNote;
-
 /// MPC keygroup layer.
 ///
 /// Each layer is an assigned file with a root note and a velocity
@@ -12,7 +10,7 @@ pub struct Layer {
     pub file: String,
 
     /// Root note
-    pub root: MidiNote,
+    pub root: u8,
 
     /// Velocity range where this layer should be active.
     pub velocity: RangeInclusive<u8>,
@@ -22,7 +20,7 @@ impl Default for Layer {
     fn default() -> Self {
         Self {
             file: Default::default(),
-            root: MidiNote::from_byte(0),
+            root: 0,
             velocity: 0..=127,
         }
     }
@@ -41,7 +39,7 @@ impl PartialOrd for Layer {
 }
 
 impl Layer {
-    pub fn new(file: String, root: MidiNote, velocity: RangeInclusive<u8>) -> Self {
+    pub fn new(file: String, root: u8, velocity: RangeInclusive<u8>) -> Self {
         Self {
             file,
             root,

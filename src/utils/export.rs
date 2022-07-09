@@ -62,8 +62,8 @@ where
         let keygroup_number = num_keygroups;
         let range = &keygroup.range;
 
-        let low_note = range.start().into_byte() as u32;
-        let high_note = range.end().into_byte() as u32;
+        let low_note = *range.start() as u32;
+        let high_note = *range.end() as u32;
 
         program_keygroup.set_child_text("LowNote", low_note.to_string())?;
         program_keygroup.set_child_text("HighNote", high_note.to_string())?;
@@ -107,7 +107,7 @@ where
                 program_layer.set_child_text("SampleFile", sample_file)?;
                 program_layer.set_child_text("VelStart", velocity_start)?;
                 program_layer.set_child_text("VelEnd", velocity_end)?;
-                let root_note = (layer.root.into_byte() as u32) + 1; // off by one in the file format
+                let root_note = (layer.root as u32) + 1; // off by one in the file format
                 program_layer.set_child_text("RootNote", root_note.to_string())?;
             }
         }
@@ -124,8 +124,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use music_note::midi::MidiNote;
-
     use crate::model::Layer;
 
     pub use super::*;
@@ -135,13 +133,9 @@ mod tests {
         let program = make_program(
             "Hello World",
             &vec![Keygroup::new(
-                MidiNote::from(0)..=MidiNote::from(127),
+                0..=127,
                 [
-                    Some(Layer::new(
-                        "HELLO.wav".to_string(),
-                        MidiNote::from(47),
-                        25..=56,
-                    )),
+                    Some(Layer::new("HELLO.wav".to_string(), 47, 25..=56)),
                     None,
                     None,
                     None,

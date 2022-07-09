@@ -43,7 +43,7 @@ impl Component for RootNotesForm {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             RootNoteFormMessages::RootNoteChanged(index, note) => {
-                self.sample_files[index].root = note;
+                self.sample_files[index].root = note.into_byte();
                 true
             }
             RootNoteFormMessages::Ok => {
@@ -71,7 +71,7 @@ impl Component for RootNotesForm {
                         <div class="tile">
                             <div class="control select">
                                 <NoteSelect
-                                    initial={sample.root}
+                                    initial={MidiNote::from_byte(sample.root)}
                                     selection_changed={ctx.link().callback(move |root: MidiNote| RootNoteFormMessages::RootNoteChanged(index, root))}
                                 />
                             </div>

@@ -1,5 +1,3 @@
-use music_note::midi::MidiNote;
-
 use super::SampleFile;
 
 /// A sample file with a root note, assigned to a layer
@@ -9,7 +7,7 @@ pub struct LayerFile {
     pub file: String,
 
     /// Root note of the original file.
-    pub root: MidiNote,
+    pub root: u8,
 
     /// Destination layer
     pub layer: usize,

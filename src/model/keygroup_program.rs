@@ -1,5 +1,4 @@
 use anyhow::Result;
-use music_note::midi::MidiNote;
 use std::io::Write;
 use xmltree::EmitterConfig;
 
@@ -47,10 +46,7 @@ impl KeygroupProgram {
         } else {
             let mut layers = [None, None, None, None];
             layers[file.layer] = new_layer;
-            self.keygroups.push(Keygroup::new(
-                MidiNote::from_byte(0)..=MidiNote::from_byte(127),
-                layers,
-            ));
+            self.keygroups.push(Keygroup::new(0..=127, layers));
         }
     }
 

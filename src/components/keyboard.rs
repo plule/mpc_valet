@@ -30,7 +30,7 @@ pub fn keyboard(props: &Props) -> Html {
             if let Some((kg_index, kg)) = props
                 .keygroups
                 .iter()
-                .find_position(|prop| prop.range.contains(note))
+                .find_position(|prop| prop.range.contains(&midi))
             {
                 let evenness = if kg_index % 2 == 0 { "even" } else { "odd" };
                 class.push(evenness);
@@ -39,7 +39,7 @@ pub fn keyboard(props: &Props) -> Html {
                     || kg
                         .layers
                         .iter()
-                        .any(|l| l.as_ref().map(|l| l.root == *note).unwrap_or(false))
+                        .any(|l| l.as_ref().map(|l| l.root == midi).unwrap_or(false))
                 {
                     class.push("highlight");
                 }

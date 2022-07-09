@@ -3,22 +3,22 @@ use std::ops::RangeInclusive;
 use music_note::{midi::MidiNote, Interval};
 
 /// Create an appropriate set of ranges from midi notes
-pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<RangeInclusive<MidiNote>>
+pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<RangeInclusive<u8>>
 where
-    I: IntoIterator<Item = &'a MidiNote>,
+    I: IntoIterator<Item = &'a u8>,
 {
-    let notes: Vec<&MidiNote> = notes.into_iter().collect();
+    let notes: Vec<&u8> = notes.into_iter().collect();
 
     if notes.is_empty() {
-        return Vec::<RangeInclusive<MidiNote>>::new();
+        return Vec::<RangeInclusive<u8>>::new();
     }
 
     // Create all the interval cuts. It always have at least the min and max midi notes,
     // then all the half way cuts between roots.
     let mut cuts = vec![MidiNote::from(0)];
     cuts.extend(notes.windows(2).map(|w| {
-        let root1 = *w[0];
-        let root2 = *w[1];
+        let root1 = MidiNote::from_byte(*w[0]);
+        let root2 = MidiNote::from_byte(*w[1]);
         assert!(root2 >= root1);
         if root1 == root2 {
             return root1;
@@ -43,7 +43,7 @@ where
                     Interval::new(1)
                 };
             let high = w[1];
-            low..=high
+            low.into_byte()..=high.into_byte()
         })
         .collect()
 }
@@ -57,27 +57,27 @@ mod tests {
     #[rstest]
     #[case(
         vec![45, 57, 69],
-        vec![(0,51), (52,63), (64,127)],
+        vec![0..=51, 52..=63, 64..=127],
         0.5,
     )]
     #[case(
         vec![45, 57, 69],
-        vec![(0,45), (46,57), (58,127)],
+        vec![0..=45, 46..=57, 58..=127],
         0.0,
     )]
     #[case(
         vec![45, 57, 69],
-        vec![(0,56), (57,68), (69,127)],
+        vec![0..=56, 57..=68, 69..=127],
         1.0,
     )]
     #[case(
         vec![45, 46, 47, 48],
-        vec![(0,45), (46,46), (47,47), (48,127)],
+        vec![0..=45, 46..=46, 47..=47, 48..=127],
         0.5,
     )]
     #[case(
         vec![45],
-        vec![(0,127)],
+        vec![0..=127],
         0.5,
     )]
     #[case(
@@ -87,16 +87,9 @@ mod tests {
     )]
     fn test_build_ranges(
         #[case] input: Vec<u8>,
-        #[case] expected: Vec<(u8, u8)>,
+        #[case] expected: Vec<RangeInclusive<u8>>,
         #[case] pitch_preference: f32,
     ) {
-        let input: Vec<MidiNote> = input.iter().map(|semis| MidiNote::from(*semis)).collect();
-        let expected: Vec<RangeInclusive<MidiNote>> = expected
-            .iter()
-            .map(|(low, high)| {
-                RangeInclusive::<MidiNote>::new(MidiNote::from(*low), MidiNote::from(*high))
-            })
-            .collect();
         let ranges = build_ranges(&input, pitch_preference);
         assert_eq!(ranges, expected);
     }

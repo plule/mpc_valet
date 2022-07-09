@@ -1,5 +1,6 @@
 use crate::model::Keygroup;
 
+use music_note::midi::MidiNote;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
@@ -22,12 +23,14 @@ pub fn keygroups_table(props: &Props) -> Html {
         .iter()
         .enumerate()
         .map(|(index, kg)| {
+            let start = MidiNote::from_byte(*kg.range.start());
+            let end = MidiNote::from_byte(*kg.range.end());
             let range = format!(
                 "{}{} to {}{}",
-                kg.range.start().pitch(),
-                kg.range.start().octave(),
-                kg.range.end().pitch(),
-                kg.range.end().octave(),
+                start.pitch(),
+                start.octave(),
+                end.pitch(),
+                end.octave(),
             );
 
             let layer_cells: Html = kg

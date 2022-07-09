@@ -166,7 +166,7 @@ impl Component for LayerSelectForm {
             // Sort by root note (group_by needs it)
             .sorted_by(|a, b| a.root.cmp(&b.root))
             // group by root note
-            .group_by(|f| f.root.into_byte())
+            .group_by(|f| f.root)
             .into_iter()
             .flat_map(|(_, group)| {
                 group
