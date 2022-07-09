@@ -3,25 +3,31 @@ use crate::components::KeygroupsTable;
 use crate::components::{LayerSelectForm, RootNotesForm, TuningForm};
 use crate::model::{KeygroupProgram, LayerFile, LayerVelocityMode, SampleFile};
 use anyhow::bail;
+use gloo_storage::LocalStorage;
+use gloo_storage::Storage;
 use js_sys::encode_uri_component;
 use log::debug;
+use serde::Deserialize;
+use serde::Serialize;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-use super::Tuning;
-
 pub enum Msg {
+    Reset,
     FilesDropped(Vec<String>),
     RootNoteSelected(Vec<SampleFile>),
     LayersSelected(Vec<LayerFile>),
     ClearDroppedFiles,
     PitchPreference(f32),
-    Save(Tuning),
+    ProgramName(String),
+    LayerVelocityMode(LayerVelocityMode),
+    Save,
     HighlightKeygroup(Option<usize>),
 }
 
 /// Possible stages when adding files
+#[derive(Serialize, Deserialize)]
 pub enum FileAddition {
     /// No change is going on
     Empty,
@@ -34,12 +40,16 @@ pub enum FileAddition {
 }
 
 /// Main component: Create the keygroup programs.
+#[derive(Serialize, Deserialize)]
 pub struct KeygroupCreator {
     /// Keygroup program being built.
     program: KeygroupProgram,
 
     /// Pitch preference (0 to 1, prefer pitching down or up)
     pitch_preference: f32,
+
+    /// Layer velocity mode
+    layer_velocity_mode: LayerVelocityMode,
 
     /// Files currently being processed
     dropped_files: FileAddition,
@@ -48,22 +58,33 @@ pub struct KeygroupCreator {
     highlight_keygroup: Option<usize>,
 }
 
+impl Default for KeygroupCreator {
+    fn default() -> Self {
+        Self {
+            program: KeygroupProgram::default(),
+            pitch_preference: 0.5,
+            layer_velocity_mode: LayerVelocityMode::Automatic,
+            dropped_files: FileAddition::Empty,
+            highlight_keygroup: None,
+        }
+    }
+}
+
 impl Component for KeygroupCreator {
     type Message = Msg;
 
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {
-            program: KeygroupProgram::default(),
-            pitch_preference: 0.5,
-            dropped_files: FileAddition::Empty,
-            highlight_keygroup: None,
-        }
+        LocalStorage::get("keygroup_creator").unwrap_or_default()
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
+        let updated = match msg {
+            Msg::Reset => {
+                *self = Self::default();
+                true
+            }
             Msg::FilesDropped(files) => {
                 self.dropped_files = FileAddition::FileList(files);
                 true
@@ -88,10 +109,16 @@ impl Component for KeygroupCreator {
                 self.program.guess_ranges(pitch_preference);
                 true
             }
-            Msg::Save(tuning) => {
-                self.program.name = tuning.program_name;
-                self.program
-                    .set_velocity_layer_mode(&tuning.layer_velocity_mode);
+            Msg::ProgramName(name) => {
+                self.program.name = name;
+                false
+            }
+            Msg::LayerVelocityMode(mode) => {
+                self.program.set_velocity_layer_mode(&mode);
+                self.layer_velocity_mode = mode;
+                false
+            }
+            Msg::Save => {
                 self.export().unwrap();
                 false
             }
@@ -99,7 +126,13 @@ impl Component for KeygroupCreator {
                 self.highlight_keygroup = index;
                 true
             }
-        }
+        };
+
+        LocalStorage::set("keygroup_creator", self).unwrap_or_else(|e| {
+            log::error!("{e}");
+        });
+
+        updated
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -126,11 +159,17 @@ impl Component for KeygroupCreator {
                 </div>
                 <Keyboard keygroups={self.program.keygroups.clone()} highlight_keygroup={self.highlight_keygroup} />
                 <TuningForm
-                    pitch_preference_init=0.5
-                    layer_velocity_mode_init={LayerVelocityMode::Automatic}
+                    pitch_preference={self.pitch_preference}
+                    layer_velocity_mode={self.layer_velocity_mode}
+                    program_name={self.program.name.clone()}
                     on_pitch_preference_change={ctx.link().callback(Msg::PitchPreference)}
-                    on_save={ctx.link().callback(Msg::Save)}
+                    on_program_name_change={ctx.link().callback(Msg::ProgramName)}
+                    on_layer_velocity_mode_change={ctx.link().callback(Msg::LayerVelocityMode)}
+                    on_save={ctx.link().callback(|_| Msg::Save)}
                 />
+                <div class="buttons is-centered">
+                    <button class="button is-danger is-large" onclick={ctx.link().callback(|_| Msg::Reset)}>{"Reset"}</button>
+                </div>
             </div>
         </div>
         }

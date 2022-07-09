@@ -330,6 +330,7 @@ name = "mpc_valet"
 version = "0.3.3-dev"
 dependencies = [
  "anyhow",
+ "gloo-storage",
  "itertools",
  "js-sys",
  "lazy_static",
@@ -339,7 +340,6 @@ dependencies = [
  "rstest",
  "rulex-macro",
  "serde",
- "serde_json",
  "wasm-bindgen",
  "wasm-logger",
  "web-sys",

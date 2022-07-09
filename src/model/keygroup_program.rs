@@ -10,22 +10,13 @@ use super::{Keygroup, Layer, LayerFile, LayerVelocityMode};
 /// A keygroup program is an instrument based on samples.
 ///
 /// It's split into multiple note range, each one in a Keygroup.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KeygroupProgram {
     /// Name of the keygroup program.
     pub name: String,
 
     /// Keygroups making this program.
     pub keygroups: Vec<Keygroup>,
-}
-
-impl Default for KeygroupProgram {
-    fn default() -> Self {
-        Self {
-            name: "My Keygroup Program".to_string(),
-            keygroups: Default::default(),
-        }
-    }
 }
 
 impl KeygroupProgram {

@@ -7,13 +7,13 @@ use yew_utils::components::drop_down::DropDown;
 #[derive(Properties, PartialEq)]
 pub struct TuningFormProps {
     #[prop_or_default]
-    pub pitch_preference_init: f32,
+    pub pitch_preference: f32,
 
     #[prop_or_default]
-    pub layer_velocity_mode_init: LayerVelocityMode,
+    pub layer_velocity_mode: LayerVelocityMode,
 
     #[prop_or_default]
-    pub program_name_init: String,
+    pub program_name: String,
 
     #[prop_or_default]
     pub on_pitch_preference_change: Callback<f32>,
@@ -25,7 +25,7 @@ pub struct TuningFormProps {
     pub on_program_name_change: Callback<String>,
 
     #[prop_or_default]
-    pub on_save: Callback<Tuning>,
+    pub on_save: Callback<()>,
 }
 
 pub enum TuningFormMessages {
@@ -37,61 +37,41 @@ pub enum TuningFormMessages {
 
 /// Root note selector for a list of sample files.
 #[derive(Default)]
-pub struct TuningForm {
-    pub tuning: Tuning,
-}
-
-#[derive(Default, Clone)]
-pub struct Tuning {
-    pub pitch_preference: f32,
-    pub layer_velocity_mode: LayerVelocityMode,
-    pub program_name: String,
-}
+pub struct TuningForm {}
 
 impl Component for TuningForm {
     type Message = TuningFormMessages;
     type Properties = TuningFormProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            tuning: Tuning {
-                pitch_preference: ctx.props().pitch_preference_init,
-                layer_velocity_mode: ctx.props().layer_velocity_mode_init,
-                program_name: ctx.props().program_name_init.clone(),
-            },
-        }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {}
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             TuningFormMessages::PitchPreferenceChange(pitch_preference) => {
-                self.tuning.pitch_preference = pitch_preference;
                 ctx.props()
                     .on_pitch_preference_change
                     .emit(pitch_preference);
                 false
             }
             TuningFormMessages::LayerVelocityModeChange(mode) => {
-                self.tuning.layer_velocity_mode = mode;
                 ctx.props().on_layer_velocity_mode_change.emit(mode);
-                true
+                false
             }
             TuningFormMessages::ProgramNameChanged(name) => {
-                self.tuning.program_name = name;
-                ctx.props()
-                    .on_program_name_change
-                    .emit(self.tuning.program_name.clone());
+                ctx.props().on_program_name_change.emit(name);
                 false
             }
             TuningFormMessages::Save => {
-                ctx.props().on_save.emit(self.tuning.clone());
+                ctx.props().on_save.emit(());
                 false
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let layer_help_text = match self.tuning.layer_velocity_mode {
+        let layer_help_text = match ctx.props().layer_velocity_mode {
             LayerVelocityMode::Automatic => {
                 "Each layer will only be used for a range of the velocity."
             }
@@ -109,7 +89,7 @@ impl Component for TuningForm {
                                 min=0
                                 max=1
                                 step=0.01
-                                value={self.tuning.pitch_preference.to_string()}
+                                value={ctx.props().pitch_preference.to_string()}
                                 oninput={TuningForm::on_pitch_preference_change(ctx)}
                             />
                         </div>
@@ -119,7 +99,7 @@ impl Component for TuningForm {
                         <div class="control">
                             <div class="select">
                                 <DropDown<LayerVelocityMode>
-                                    initial={ctx.props().layer_velocity_mode_init}
+                                    initial={ctx.props().layer_velocity_mode}
                                     options={vec![LayerVelocityMode::Unison, LayerVelocityMode::Automatic]}
                                     selection_changed={ctx.link().callback(TuningFormMessages::LayerVelocityModeChange)}
                                 />
@@ -135,6 +115,7 @@ impl Component for TuningForm {
                                 class="input"
                                 type="text"
                                 placeholder="Program Name"
+                                value={ctx.props().program_name.clone()}
                                 oninput={TuningForm::on_program_name_change(ctx)}
                             />
                         </div>
