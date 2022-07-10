@@ -93,6 +93,13 @@ impl Keygroup {
                     layer.velocity = start..=end;
                 }
             }
+            LayerVelocityMode::Manual(ranges) => {
+                for (range, layer) in ranges.iter().zip(self.layers.iter_mut()) {
+                    if let Some(layer) = layer {
+                        layer.velocity = range.clone();
+                    }
+                }
+            }
         }
     }
 }
