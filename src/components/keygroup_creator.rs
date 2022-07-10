@@ -160,7 +160,7 @@ impl Component for KeygroupCreator {
                 <Keyboard keygroups={self.program.keygroups.clone()} highlight_keygroup={self.highlight_keygroup} />
                 <TuningForm
                     pitch_preference={self.pitch_preference}
-                    layer_velocity_mode={self.layer_velocity_mode.clone()}
+                    layer_velocity_mode={self.layer_velocity_mode}
                     program_name={self.program.name.clone()}
                     on_pitch_preference_change={ctx.link().callback(Msg::PitchPreference)}
                     on_program_name_change={ctx.link().callback(Msg::ProgramName)}
