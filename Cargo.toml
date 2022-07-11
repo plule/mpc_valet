@@ -1,6 +1,6 @@
 [package]
 name = "mpc_valet"
-version = "0.3.5-dev"
+version = "0.3.5"
 edition = "2021"
 authors = ["Pierre Lulé <pierre@lule.fr>"]
 description = "A tool for creating instrument for MPC drum machines."
