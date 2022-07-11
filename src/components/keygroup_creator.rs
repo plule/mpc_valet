@@ -83,6 +83,7 @@ impl Component for KeygroupCreator {
         let redraw = match msg {
             Msg::Reset => {
                 *self = Self::default();
+                LocalStorage::clear();
                 true
             }
             Msg::FilesDropped(files) => {

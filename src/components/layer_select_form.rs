@@ -65,6 +65,10 @@ impl Component for LayerSelectForm {
         LocalStorage::get("layer_select_form").unwrap_or_else(|_| ctx.props().files.clone().into())
     }
 
+    fn destroy(&mut self, _ctx: &Context<Self>) {
+        LocalStorage::delete("layer_select_form");
+    }
+
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let redraw = match msg {
             LayerSelectFormMessages::LayerChanged(index, layer) => {

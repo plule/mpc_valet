@@ -47,6 +47,10 @@ impl Component for RootNotesForm {
         LocalStorage::get("root_note_form").unwrap_or_else(|_| ctx.props().files.clone().into())
     }
 
+    fn destroy(&mut self, _ctx: &Context<Self>) {
+        LocalStorage::delete("root_note_form");
+    }
+
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let redraw = match msg {
             RootNoteFormMessages::RootNoteChanged(index, note) => {
@@ -129,9 +133,5 @@ impl Component for RootNotesForm {
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
         *self = ctx.props().files.clone().into();
         true
-    }
-
-    fn destroy(&mut self, _ctx: &Context<Self>) {
-        LocalStorage::delete("root_note_form");
     }
 }
