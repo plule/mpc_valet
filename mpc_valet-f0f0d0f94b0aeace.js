@@ -381,6 +381,9 @@ function getImports() {
         getInt32Memory0()[arg0 / 4 + 1] = len0;
         getInt32Memory0()[arg0 / 4 + 0] = ptr0;
     };
+    imports.wbg.__wbg_clear_124d23b3b76f5a94 = function() { return handleError(function (arg0) {
+        getObject(arg0).clear();
+    }, arguments) };
     imports.wbg.__wbg_getItem_9cb4c95f48b3e51b = function() { return handleError(function (arg0, arg1, arg2, arg3) {
         const ret = getObject(arg1).getItem(getStringFromWasm0(arg2, arg3));
         var ptr0 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -590,7 +593,7 @@ function getImports() {
     imports.wbg.__wbindgen_throw = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbindgen_closure_wrapper1852 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper1851 = function(arg0, arg1, arg2) {
         const ret = makeClosure(arg0, arg1, 748, __wbg_adapter_20);
         return addHeapObject(ret);
     };
@@ -627,7 +630,7 @@ function initSync(bytes) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('mpc_valet-b4ff7c2173db3a9b_bg.wasm', import.meta.url);
+        input = new URL('mpc_valet-f0f0d0f94b0aeace_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
