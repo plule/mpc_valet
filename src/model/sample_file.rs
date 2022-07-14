@@ -1,5 +1,5 @@
 use music_note::midi::MidiNote;
-use rulex_macro::rulex;
+use pomsky_macro::pomsky;
 
 use music_note::{
     midi::Octave,
@@ -40,7 +40,7 @@ impl From<String> for SampleFile {
 
 /// Try parsing a file with a number midi notation (0-127)
 fn parse_number_notation(filename: &str) -> Option<MidiNote> {
-    const REGEX: &str = rulex!(
+    const REGEX: &str = pomsky!(
         :value(range "0"-"127")
     );
     lazy_static! {
@@ -56,7 +56,7 @@ fn parse_number_notation(filename: &str) -> Option<MidiNote> {
 
 /// Try parsing a file with a letter notation (A2)
 fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
-    const REGEX: &str = rulex!(
+    const REGEX: &str = pomsky!(
         // Do not allow a letter just before the natural letter
         // It's likely an actual word
         (Start | !["A"-"Z" "a"-"z"])

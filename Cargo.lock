@@ -336,9 +336,9 @@ dependencies = [
  "lazy_static",
  "log",
  "music-note",
+ "pomsky-macro",
  "regex",
  "rstest",
- "rulex-macro",
  "serde",
  "wasm-bindgen",
  "wasm-logger",
@@ -387,6 +387,25 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "pomsky"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c77f81ea769143f4ef0deacbadaf3a048a8e139583432cb7c2434304512c74d5"
+dependencies = [
+ "nom",
+ "thiserror",
+]
+
+[[package]]
+name = "pomsky-macro"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05415e9086cf67db526284b9bca398a394250af838f089c87953e5f88d4cd2e7"
+dependencies = [
+ "pomsky",
+]
 
 [[package]]
 name = "proc-macro-error"
@@ -470,25 +489,6 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn",
-]
-
-[[package]]
-name = "rulex"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09c140d93b2cd8190a73a024ae13f18517cbf0ef22eeb71decd57cd3ef90bcd5"
-dependencies = [
- "nom",
- "thiserror",
-]
-
-[[package]]
-name = "rulex-macro"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc0c31caaa29559515643f7cdbedc4b35c15fb49f14c4f35b1e2f5fefbe89ab3"
-dependencies = [
- "rulex",
 ]
 
 [[package]]
