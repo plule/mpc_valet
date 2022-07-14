@@ -208,7 +208,7 @@ function makeClosure(arg0, arg1, dtor, f) {
     return real;
 }
 function __wbg_adapter_20(arg0, arg1, arg2) {
-    wasm._dyn_core__ops__function__Fn__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h7bf42f9ee5c0a962(arg0, arg1, addHeapObject(arg2));
+    wasm._dyn_core__ops__function__Fn__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h619cb44ecab5b754(arg0, arg1, addHeapObject(arg2));
 }
 
 let cachedUint32Memory0;
@@ -593,8 +593,8 @@ function getImports() {
     imports.wbg.__wbindgen_throw = function(arg0, arg1) {
         throw new Error(getStringFromWasm0(arg0, arg1));
     };
-    imports.wbg.__wbindgen_closure_wrapper1851 = function(arg0, arg1, arg2) {
-        const ret = makeClosure(arg0, arg1, 748, __wbg_adapter_20);
+    imports.wbg.__wbindgen_closure_wrapper1898 = function(arg0, arg1, arg2) {
+        const ret = makeClosure(arg0, arg1, 774, __wbg_adapter_20);
         return addHeapObject(ret);
     };
 
@@ -630,7 +630,7 @@ function initSync(bytes) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('mpc_valet-f0f0d0f94b0aeace_bg.wasm', import.meta.url);
+        input = new URL('mpc_valet-edfbb046f455e90c_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
