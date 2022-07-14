@@ -33,6 +33,11 @@ jobs:
         crate: trunk
     - name: Build for web
       run: trunk build --release --public-url mpc_valet
+    - name: Upload site
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist
 
   test:
     name: test
