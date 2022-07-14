@@ -115,7 +115,7 @@ impl Component for KeygroupCreator {
             Msg::LayerVelocityMode(mode) => {
                 self.program.set_velocity_layer_mode(&mode);
                 self.layer_velocity_mode = mode;
-                false
+                true
             }
             Msg::Save => {
                 self.export().unwrap();
