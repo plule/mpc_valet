@@ -1,4 +1,4 @@
-use crate::components::NoteSelect;
+use crate::components::{Icon, NoteSelect};
 use gloo_storage::{LocalStorage, Storage};
 use music_note::midi::MidiNote;
 use serde::{Deserialize, Serialize};
@@ -107,10 +107,7 @@ impl Component for RootNotesForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
-                        <span class="icon">
-                            <ion-icon name="musical-notes"></ion-icon>
-                        </span>
-                        <p class="modal-card-title">{"Select root notes"}</p>
+                        <Icon icon="musical-notes" text="Select root notes" text_class="modal-card-title" />
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}></button>
                     </header>
                     <section class="modal-card-body">
@@ -120,8 +117,12 @@ impl Component for RootNotesForm {
                     </section>
                     <footer class="modal-card-foot">
                         <div class="buttons has-addons">
-                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>{"Cancel"}</button>
-                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>{"Reset"}</button>
+                            <button class="button is-danger" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>
+                                <Icon icon="trash" text="Cancel" />
+                            </button>
+                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>
+                                <Icon icon="refresh" text="Reset" />
+                            </button>
                             <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Done)}>{"Next"}</button>
                         </div>
                     </footer>

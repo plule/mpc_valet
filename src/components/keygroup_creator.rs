@@ -1,6 +1,4 @@
-use crate::components::Keyboard;
-use crate::components::KeygroupsTable;
-use crate::components::{LayerSelectForm, RootNotesForm, TuningForm};
+use crate::components::*;
 use crate::model::{KeygroupProgram, LayerFile, LayerVelocityMode, SampleFile};
 use anyhow::bail;
 use gloo_storage::LocalStorage;
@@ -144,16 +142,11 @@ impl Component for KeygroupCreator {
                 <div class="box">
                     <KeygroupsTable keygroups={self.program.keygroups.clone()} on_hovered_kg={ctx.link().callback(Msg::HighlightKeygroup)} />
                     {self.view_file_addition(ctx)}
-                    <div class="file is-boxed is-centered">
+                    <div class="file is-boxed is-centered is-primary">
                         <label class="file-label">
                             <input class="file-input" type="file" name="samples" multiple=true accept=".wav" oninput={KeygroupCreator::on_file_input(ctx)} />
                             <span class="file-cta">
-                                <span class="file-icon">
-                                    <ion-icon name="add-circle"></ion-icon>
-                                </span>
-                                <span class="file-label">
-                                    {"Add Samples..."}
-                                </span>
+                                <Icon icon="add-circle" class="file-icon" text="Add Samples..." text_class="file-label" />
                             </span>
                         </label>
                     </div>
@@ -169,7 +162,9 @@ impl Component for KeygroupCreator {
                     on_save={ctx.link().callback(|_| Msg::Save)}
                 />
                 <div class="buttons is-centered">
-                    <button class="button is-danger is-large" onclick={ctx.link().callback(|_| Msg::Reset)}>{"Reset"}</button>
+                    <button class="button is-danger is-large" onclick={ctx.link().callback(|_| Msg::Reset)}>
+                        <Icon icon="trash" text="Reset" />
+                    </button>
                 </div>
             </div>
         </div>

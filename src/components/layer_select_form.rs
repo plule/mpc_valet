@@ -1,4 +1,4 @@
-use crate::components::LayerSelect;
+use crate::components::{Icon, LayerSelect};
 use crate::model::LayerFile;
 use gloo_storage::{LocalStorage, Storage};
 use itertools::Itertools;
@@ -144,10 +144,7 @@ impl Component for LayerSelectForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
-                        <span class="icon">
-                            <ion-icon name="layers"></ion-icon>
-                        </span>
-                        <p class="modal-card-title">{"Select layers"}</p>
+                        <Icon icon="layers" text="Select layers" text_class="modal-card-title" />
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}></button>
                     </header>
                     <section class="modal-card-body">
@@ -164,22 +161,13 @@ impl Component for LayerSelectForm {
                             <div class="column">
                                 <div class="buttons has-addons is-centered">
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(0,1))}>
-                                        <span class="icon">
-                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
-                                        </span>
-                                        <span>{"Swap 1-2"}</span>
+                                        <Icon icon="swap-horizontal-outline" text="Swap 1-2" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(1,2))}>
-                                        <span class="icon">
-                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
-                                        </span>
-                                        <span>{"Swap 2-3"}</span>
+                                        <Icon icon="swap-horizontal-outline" text="Swap 2-3" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(2,3))}>
-                                        <span class="icon">
-                                            <ion-icon name="swap-horizontal-outline"></ion-icon>
-                                        </span>
-                                        <span>{"Swap 3-4"}</span>
+                                        <Icon icon="swap-horizontal-outline" text="Swap 3-4" />
                                     </button>
                                 </div>
                             </div>
@@ -187,8 +175,12 @@ impl Component for LayerSelectForm {
                     </section>
                     <footer class="modal-card-foot">
                         <div class="buttons has-addons">
-                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}>{"Cancel"}</button>
-                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Reset)}>{"Reset"}</button>
+                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}>
+                                <Icon icon="trash" text ="Cancel" />
+                            </button>
+                            <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Reset)}>
+                                <Icon icon="refresh" text="Reset" />
+                            </button>
                             <button class="button is-success" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Done)}>{"Ok"}</button>
                         </div>
                     </footer>

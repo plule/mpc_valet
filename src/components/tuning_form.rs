@@ -1,3 +1,4 @@
+use crate::components::Icon;
 use crate::model::LayerVelocityMode;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlInputElement, InputEvent, MouseEvent};
@@ -121,7 +122,7 @@ impl Component for TuningForm {
                         </div>
                         <div class="control">
                             <button class="button is-link" onclick={ctx.link().callback(|_: MouseEvent| TuningFormMessages::Save)}>
-                                {"Save"}
+                                <Icon icon="save" text="Save" />
                             </button>
                         </div>
                     </div>

@@ -1,4 +1,5 @@
 mod app;
+mod icon;
 mod keyboard;
 mod keygroup_creator;
 mod keygroups_table;
@@ -9,6 +10,7 @@ mod root_note_form;
 mod tuning_form;
 
 pub use app::*;
+pub use icon::*;
 pub use keyboard::*;
 pub use keygroup_creator::*;
 pub use keygroups_table::*;
