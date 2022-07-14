@@ -41,6 +41,7 @@ impl From<String> for SampleFile {
 /// Try parsing a file with a number midi notation (0-127)
 fn parse_number_notation(filename: &str) -> Option<MidiNote> {
     const REGEX: &str = pomsky!(
+        "0"* // possible leading zeroes
         :value(range "0"-"127")
     );
     lazy_static! {
@@ -159,6 +160,7 @@ mod tests {
     #[case("THMB40.wav", MidiNote::from(40))]
     #[case("THMB43.wav", MidiNote::from(43))]
     #[case("THMB48.wav", MidiNote::from(48))]
+    #[case("THMB048.wav", MidiNote::from(48))]
     fn parse_note_test(#[case] input: &str, #[case] expected: MidiNote) {
         assert_eq!(
             SampleFile::from(input.to_string()).root,
