@@ -23,18 +23,22 @@ pub struct SampleFile {
 
 impl From<String> for SampleFile {
     fn from(value: String) -> Self {
-        let note = parse_letter_notation(&value).or_else(|| parse_number_notation(&value));
-        if let Some(note) = note {
-            return SampleFile {
-                file: value,
-                root: note.into_byte(),
-            };
-        }
-        SampleFile {
+        let mut sample_file = SampleFile {
             file: value,
-            // TODO report
             root: 0,
+        };
+        sample_file.guess_root();
+        sample_file
+    }
+}
+
+impl SampleFile {
+    pub fn guess_root(&mut self) {
+        let note = parse_letter_notation(&self.file).or_else(|| parse_number_notation(&self.file));
+        if let Some(note) = note {
+            self.root = note.into_byte()
         }
+        // TODO else
     }
 }
 
