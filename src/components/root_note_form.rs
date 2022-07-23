@@ -20,6 +20,8 @@ pub struct RootNoteFormProps {
 
 pub enum RootNoteFormMessages {
     RootNoteChanged(usize, MidiNote),
+    IncreaseOctave,
+    DecreaseOctave,
     Done,
     Reset,
     Cancel,
@@ -55,6 +57,18 @@ impl Component for RootNotesForm {
         let redraw = match msg {
             RootNoteFormMessages::RootNoteChanged(index, note) => {
                 self.sample_files[index].root = note.into_byte();
+                true
+            }
+            RootNoteFormMessages::IncreaseOctave => {
+                self.sample_files.iter_mut().for_each(|s| {
+                    s.root = (s.root + 12).clamp(0, 127);
+                });
+                true
+            }
+            RootNoteFormMessages::DecreaseOctave => {
+                self.sample_files.iter_mut().for_each(|s| {
+                    s.root = (s.root - 12).clamp(0, 127);
+                });
                 true
             }
             RootNoteFormMessages::Done => {
@@ -115,15 +129,29 @@ impl Component for RootNotesForm {
                             {samples}
                         </div>
                     </section>
-                    <footer class="modal-card-foot">
-                        <div class="buttons has-addons">
-                            <button class="button is-danger" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>
-                                <Icon icon="trash" text="Cancel" />
-                            </button>
-                            <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>
-                                <Icon icon="refresh" text="Reset" />
-                            </button>
-                            <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Done)}>{"Next"}</button>
+                    <footer class="modal-card-foot is-centered">
+                        <div class="columns">
+                            <section class="section">
+                                <div class="buttons has-addons">
+                                    <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::DecreaseOctave)}>
+                                        <Icon icon="remove-circle-outline" text="Octave -" />
+                                    </button>
+                                    <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::IncreaseOctave)}>
+                                        <Icon icon="add-circle-outline" text="Octave +" />
+                                    </button>
+                                </div>
+                            </section>
+                            <section class="section">
+                                <div class="buttons has-addons">
+                                    <button class="button is-danger" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>
+                                        <Icon icon="trash" text="Cancel" />
+                                    </button>
+                                    <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>
+                                        <Icon icon="refresh" text="Reset" />
+                                    </button>
+                                    <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Done)}>{"Next"}</button>
+                                </div>
+                            </section>
                         </div>
                     </footer>
                 </div>
