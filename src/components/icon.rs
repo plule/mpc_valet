@@ -7,7 +7,11 @@ pub struct Props {
 
     pub icon: String,
 
-    pub text: String,
+    #[prop_or(None)]
+    pub text_before: Option<String>,
+
+    #[prop_or(None)]
+    pub text_after: Option<String>,
 
     #[prop_or_default()]
     pub text_class: String,
@@ -15,12 +19,37 @@ pub struct Props {
 
 #[function_component(Icon)]
 pub fn icon(props: &Props) -> Html {
+    let Props {
+        class,
+        icon,
+        text_before,
+        text_after,
+        text_class,
+    } = props.clone();
+
+    let text_before = if let Some(text) = text_before {
+        html! {
+            <span class={text_class}>{text}</span>
+        }
+    } else {
+        html! {}
+    };
+
+    let text_after = if let Some(text) = text_after {
+        html! {
+            <span class={text_class}>{text}</span>
+        }
+    } else {
+        html! {}
+    };
+
     html! {
         <>
-            <span class={props.class.clone()}>
-                <ion-icon name={props.icon.clone()}></ion-icon>
+            {text_before}
+            <span class={class}>
+                <ion-icon name={icon.clone()}></ion-icon>
             </span>
-            <span class={props.text_class.clone()}>{props.text.clone()}</span>
+            {text_after}
         </>
     }
 }

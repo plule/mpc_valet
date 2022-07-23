@@ -146,7 +146,7 @@ impl Component for KeygroupCreator {
                         <label class="file-label">
                             <input class="file-input" type="file" name="samples" multiple=true accept=".wav" oninput={KeygroupCreator::on_file_input(ctx)} />
                             <span class="file-cta">
-                                <Icon icon="add-circle" class="file-icon" text="Add Samples..." text_class="file-label" />
+                                <Icon icon="add-circle" class="file-icon" text_after="Add Samples..." text_class="file-label" />
                             </span>
                         </label>
                     </div>
@@ -163,7 +163,7 @@ impl Component for KeygroupCreator {
                 />
                 <div class="buttons is-centered">
                     <button class="button is-danger is-large" onclick={ctx.link().callback(|_| Msg::Reset)}>
-                        <Icon icon="trash" text="Reset" />
+                        <Icon icon="trash" text_after="Reset" />
                     </button>
                 </div>
             </div>

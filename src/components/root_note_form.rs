@@ -121,7 +121,7 @@ impl Component for RootNotesForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
-                        <Icon icon="musical-notes" text="Select root notes" text_class="modal-card-title" />
+                        <Icon icon="musical-notes" text_after="Select root notes" text_class="modal-card-title" />
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}></button>
                     </header>
                     <section class="modal-card-body">
@@ -134,20 +134,20 @@ impl Component for RootNotesForm {
                             <section class="section">
                                 <div class="buttons has-addons">
                                     <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::DecreaseOctave)}>
-                                        <Icon icon="remove-circle-outline" text="Octave -" />
+                                        <Icon icon="remove-circle-outline" text_after="Octave -" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::IncreaseOctave)}>
-                                        <Icon icon="add-circle-outline" text="Octave +" />
+                                        <Icon icon="add-circle-outline" text_after="Octave +" />
                                     </button>
                                 </div>
                             </section>
                             <section class="section">
                                 <div class="buttons has-addons">
                                     <button class="button is-danger" onclick={ctx.link().callback(|_| RootNoteFormMessages::Cancel)}>
-                                        <Icon icon="trash" text="Cancel" />
+                                        <Icon icon="trash" text_after="Cancel" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| RootNoteFormMessages::Reset)}>
-                                        <Icon icon="refresh" text="Reset" />
+                                        <Icon icon="refresh" text_after="Reset" />
                                     </button>
                                     <button class="button is-success" onclick={ctx.link().callback(|_| RootNoteFormMessages::Done)}>{"Next"}</button>
                                 </div>

@@ -144,7 +144,7 @@ impl Component for LayerSelectForm {
                 <div class="modal-background"></div>
                 <div class="modal-card">
                     <header class="modal-card-head">
-                        <Icon icon="layers" text="Select layers" text_class="modal-card-title" />
+                        <Icon icon="layers" text_after="Select layers" text_class="modal-card-title" />
                         <button class="delete" aria-label="close" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}></button>
                     </header>
                     <section class="modal-card-body">
@@ -161,13 +161,13 @@ impl Component for LayerSelectForm {
                             <div class="column">
                                 <div class="buttons has-addons is-centered">
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(0,1))}>
-                                        <Icon icon="swap-horizontal-outline" text="Swap 1-2" />
+                                        <Icon icon="swap-horizontal-outline" text_after="Swap 1-2" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(1,2))}>
-                                        <Icon icon="swap-horizontal-outline" text="Swap 2-3" />
+                                        <Icon icon="swap-horizontal-outline" text_after="Swap 2-3" />
                                     </button>
                                     <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Swap(2,3))}>
-                                        <Icon icon="swap-horizontal-outline" text="Swap 3-4" />
+                                        <Icon icon="swap-horizontal-outline" text_after="Swap 3-4" />
                                     </button>
                                 </div>
                             </div>
@@ -176,10 +176,10 @@ impl Component for LayerSelectForm {
                     <footer class="modal-card-foot">
                         <div class="buttons has-addons">
                             <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Cancel)}>
-                                <Icon icon="trash" text ="Cancel" />
+                                <Icon icon="trash" text_after ="Cancel" />
                             </button>
                             <button class="button" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Reset)}>
-                                <Icon icon="refresh" text="Reset" />
+                                <Icon icon="refresh" text_after="Reset" />
                             </button>
                             <button class="button is-success" onclick={ctx.link().callback(|_| LayerSelectFormMessages::Done)}>{"Ok"}</button>
                         </div>

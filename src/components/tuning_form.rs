@@ -122,7 +122,7 @@ impl Component for TuningForm {
                         </div>
                         <div class="control">
                             <button class="button is-link" onclick={ctx.link().callback(|_: MouseEvent| TuningFormMessages::Save)}>
-                                <Icon icon="save" text="Save" />
+                                <Icon icon="save" text_after="Save" />
                             </button>
                         </div>
                     </div>
