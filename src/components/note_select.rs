@@ -48,7 +48,24 @@ impl Component for NoteSelect {
                 let note = MidiNote::from_byte(byte);
                 let opt_str = format!("{}{}", note.pitch(), note.octave());
                 html! {
+                    <>
+                    <p class="navbar-item">
+                        <div class="dropdown is-active">
+                            <div class="dropdown-trigger mx-2">
+                                {"Submenu 1&nbsp;&nbsp;&nbsp;"}
+                                <i class="fas fa-angle-right"></i>
+                            </div>
+                        <div class="dropdown-menu" role="menu" style="top:-15px;margin-left:100%;">
+                            <div class="dropdown-content">
+                                <a href="#" class="dropdown-item">{"coso 2"}</a>
+                                <a href="#" class="dropdown-item">{"coso"}</a>
+                                <a href="#" class="dropdown-item">{"cosito"}</a>
+                            </div>
+                        </div>
+                        </div>
+                    </p>
                     <option value={opt_str.clone()} selected={note == value}>{opt_str.clone()}</option>
+                    </>
                 }
             })
             .collect();
