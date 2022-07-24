@@ -14,9 +14,9 @@ pub enum Msg {
     FineTuningDone(KeygroupProgram),
 }
 
-/// Possible stages when adding files
+/// Wizard steps
 #[derive(Serialize, Deserialize)]
-pub enum Stage {
+pub enum Step {
     /// Selecting samples and their root notes
     AddSamples,
 
@@ -33,14 +33,14 @@ pub enum Stage {
 /// Main component: Create the keygroup programs.
 #[derive(Serialize, Deserialize)]
 pub struct KeygroupCreator {
-    /// Stage of the keygroup creation
-    stage: Stage,
+    /// Steps of the keygroup creation
+    step: Step,
 }
 
 impl Default for KeygroupCreator {
     fn default() -> Self {
         Self {
-            stage: Stage::AddSamples,
+            step: Step::AddSamples,
         }
     }
 }
@@ -62,15 +62,15 @@ impl Component for KeygroupCreator {
                 true
             }
             Msg::AddSamplesDone(samples) => {
-                self.stage = Stage::SelectLayers(samples);
+                self.step = Step::SelectLayers(samples);
                 true
             }
             Msg::SelectLayersDone(layer_files) => {
-                self.stage = Stage::FineTuning(layer_files);
+                self.step = Step::FineTuning(layer_files);
                 true
             }
             Msg::FineTuningDone(program) => {
-                self.stage = Stage::Done(program);
+                self.step = Step::Done(program);
                 true
             }
         };
@@ -88,11 +88,11 @@ impl Component for KeygroupCreator {
         let mut fine_tuning_class = classes!("steps-segment");
         let mut done_class = classes!("steps-segment");
 
-        match self.stage {
-            Stage::AddSamples => add_samples_class.push("is-active"),
-            Stage::SelectLayers(_) => select_layers_class.push("is-active"),
-            Stage::FineTuning(_) => fine_tuning_class.push("is-active"),
-            Stage::Done(_) => done_class.push("is-active"),
+        match self.step {
+            Step::AddSamples => add_samples_class.push("is-active"),
+            Step::SelectLayers(_) => select_layers_class.push("is-active"),
+            Step::FineTuning(_) => fine_tuning_class.push("is-active"),
+            Step::Done(_) => done_class.push("is-active"),
         }
 
         debug!("Redrawing main view");
@@ -133,7 +133,7 @@ impl Component for KeygroupCreator {
                         </div>
                     </li>
                 </ul>
-                {self.view_current_stage(ctx)}
+                {self.view_current_step(ctx)}
             </div>
             <div class="buttons is-centered">
                 <button class="button is-danger is-large" onclick={ctx.link().callback(|_| Msg::Reset)}>
@@ -146,14 +146,14 @@ impl Component for KeygroupCreator {
 }
 
 impl KeygroupCreator {
-    fn view_current_stage(&self, ctx: &Context<Self>) -> Html {
-        match &self.stage {
-            Stage::AddSamples => html! {
+    fn view_current_step(&self, ctx: &Context<Self>) -> Html {
+        match &self.step {
+            Step::AddSamples => html! {
                 <StepAddSamples
                     on_next={ctx.link().callback(Msg::AddSamplesDone)}
                 />
             },
-            Stage::SelectLayers(files) => {
+            Step::SelectLayers(files) => {
                 html! {
                     <StepSelectLayers
                         files={files.clone()}
@@ -161,7 +161,7 @@ impl KeygroupCreator {
                     />
                 }
             }
-            Stage::FineTuning(layer_files) => {
+            Step::FineTuning(layer_files) => {
                 html! {
                     <StepFineTuning
                         layer_files = {layer_files.clone()}
@@ -169,7 +169,7 @@ impl KeygroupCreator {
                     />
                 }
             }
-            Stage::Done(program) => html! {
+            Step::Done(program) => html! {
                 <StepDone
                     program = {program.clone()}
                 />
