@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-#[derive(Properties, PartialEq)]
+#[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     #[prop_or("icon".to_string())]
     pub class: String,
@@ -25,7 +25,7 @@ pub fn icon(props: &Props) -> Html {
         text_before,
         text_after,
         text_class,
-    } = props.clone();
+    } = &(*props).clone();
 
     let text_before = if let Some(text) = text_before {
         html! {

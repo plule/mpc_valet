@@ -47,7 +47,7 @@ pub struct StepFineTuning {
 impl From<Vec<LayerFile>> for StepFineTuning {
     fn from(layer_files: Vec<LayerFile>) -> Self {
         let mut program = KeygroupProgram::default();
-        program.insert_layer_files(layer_files.clone());
+        program.insert_layer_files(layer_files);
         program.sort_keygroups();
         program.guess_ranges(0.5);
 

@@ -45,7 +45,7 @@ impl Component for StepDone {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let redraw = match msg {
             Msg::ProgramNameChanged(name) => {
-                self.program.name = name.clone();
+                self.program.name = name;
                 true
             }
             Msg::Save => {

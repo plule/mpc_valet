@@ -157,7 +157,7 @@ impl KeygroupCreator {
                 html! {
                     <StepSelectLayers
                         files={files.clone()}
-                        on_next={ctx.link().callback(|layer_files| Msg::SelectLayersDone(layer_files))}
+                        on_next={ctx.link().callback(Msg::SelectLayersDone)}
                     />
                 }
             }
@@ -165,7 +165,7 @@ impl KeygroupCreator {
                 html! {
                     <StepFineTuning
                         layer_files = {layer_files.clone()}
-                        on_next = {ctx.link().callback(|program| Msg::FineTuningDone(program))}
+                        on_next = {ctx.link().callback(Msg::FineTuningDone)}
                     />
                 }
             }
