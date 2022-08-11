@@ -350,9 +350,9 @@ dependencies = [
 
 [[package]]
 name = "music-note"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cb69e31b7694eb9ecd221aa4afeda49ae82bffb6a135753e51d90d713ae1f5f"
+checksum = "6e2d70f970c4e4336396f1a56f28e315dbd4188109e680acfa5dd6475f475954"
 dependencies = [
  "num-traits",
 ]
