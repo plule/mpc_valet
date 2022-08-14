@@ -1,12 +1,11 @@
-use music_note::midi::MidiNote;
 use pomsky_macro::pomsky;
-
-use music_note::{
+use regex::Regex;
+use staff::midi::MidiNote;
+use staff::{
     midi::Octave,
     note::{Accidental, AccidentalKind, Flat, Sharp},
     Natural, Pitch,
 };
-use regex::Regex;
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -129,8 +128,8 @@ fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use music_note::midi;
     use rstest::rstest;
+    use staff::midi;
 
     #[rstest]
     #[case("A2.wav", midi!(A,2))]

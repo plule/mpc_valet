@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use music_note::midi::MidiNote;
+use staff::midi::MidiNote;
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlSelectElement};
 use yew::{html, Callback, Component, Html, NodeRef, Properties};

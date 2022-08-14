@@ -1,7 +1,7 @@
 use crate::components::{Icon, NoteSelect};
 use gloo_storage::{LocalStorage, Storage};
-use music_note::midi::MidiNote;
 use serde::{Deserialize, Serialize};
+use staff::midi::MidiNote;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlInputElement, InputEvent};
 use yew::{html, Callback, Component, Context, Html, Properties};

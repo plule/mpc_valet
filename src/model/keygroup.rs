@@ -99,8 +99,8 @@ impl Keygroup {
 
 #[cfg(test)]
 mod tests {
-    use music_note::midi;
     use rstest::rstest;
+    use staff::midi;
 
     pub use super::*;
 

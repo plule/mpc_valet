@@ -2,7 +2,7 @@
 use std::slice::Iter;
 
 use lazy_static::lazy_static;
-use music_note::{
+use staff::{
     midi::{MidiNote, Octave},
     Pitch,
 };

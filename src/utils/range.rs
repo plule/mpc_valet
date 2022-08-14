@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use music_note::{midi::MidiNote, Interval};
+use staff::{midi::MidiNote, Interval};
 
 /// Create an appropriate set of ranges from midi notes
 pub fn build_ranges<'a, I>(notes: I, pitch_preference: f32) -> Vec<RangeInclusive<u8>>

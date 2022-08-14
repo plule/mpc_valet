@@ -1,6 +1,6 @@
 use crate::model::Keygroup;
 
-use music_note::midi::MidiNote;
+use staff::midi::MidiNote;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]

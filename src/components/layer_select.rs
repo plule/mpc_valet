@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use music_note::midi::MidiNote;
+use staff::midi::MidiNote;
 use yew::{html, Callback, Component, Html, Properties};
 
 #[derive(Properties, PartialEq, Clone)]
