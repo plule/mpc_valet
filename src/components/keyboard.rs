@@ -25,7 +25,7 @@ pub fn keyboard(props: &Props) -> Html {
                 Pitch::D | Pitch::E | Pitch::G | Pitch::A | Pitch::B => "white offset",
             }];
 
-            let mut tooltip = format!("{}{}", note.pitch(), note.octave());
+            let mut tooltip = note.to_string();
 
             if let Some((kg_index, kg)) = props
                 .keygroups

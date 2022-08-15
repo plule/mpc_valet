@@ -1,6 +1,3 @@
-use std::fmt::Display;
-
-use staff::midi::MidiNote;
 use yew::{html, Callback, Component, Html, Properties};
 
 #[derive(Properties, PartialEq, Clone)]
@@ -68,20 +65,5 @@ impl Component for LayerSelect {
                 false
             }
         }
-    }
-}
-
-#[derive(PartialEq, Clone)]
-struct MidiNoteWithDisplay(MidiNote);
-
-impl Display for MidiNoteWithDisplay {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.0.pitch(), self.0.octave())
-    }
-}
-
-impl From<MidiNote> for MidiNoteWithDisplay {
-    fn from(note: MidiNote) -> Self {
-        Self(note)
     }
 }

@@ -1,11 +1,8 @@
 use pomsky_macro::pomsky;
 use regex::Regex;
 use staff::midi::MidiNote;
-use staff::{
-    midi::Octave,
-    note::{Accidental, AccidentalKind, Flat, Sharp},
-    Natural, Pitch,
-};
+use staff::Note;
+use staff::{midi::Octave, note::Accidental, Natural, Pitch};
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -101,12 +98,13 @@ fn parse_letter_notation(filename: &str) -> Option<MidiNote> {
         _ => None,
     }?;
 
-    let pitch = match accidental {
-        "#" => Sharp::into_pitch(AccidentalKind::Single, natural),
-        "b" => Flat::into_pitch(AccidentalKind::Single, natural),
-        "" => Pitch::natural(natural),
+    let pitch: Pitch = match accidental {
+        "#" => Note::sharp(natural),
+        "b" => Note::flat(natural),
+        "" => natural.into(),
         _ => unreachable!(),
-    };
+    }
+    .into();
 
     let octave = match octave.parse::<i8>().ok()? {
         -1 => Some(Octave::NEGATIVE_ONE),

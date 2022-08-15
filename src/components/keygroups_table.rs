@@ -25,13 +25,7 @@ pub fn keygroups_table(props: &Props) -> Html {
         .map(|(index, kg)| {
             let start = MidiNote::from_byte(*kg.range.start());
             let end = MidiNote::from_byte(*kg.range.end());
-            let range = format!(
-                "{}{} to {}{}",
-                start.pitch(),
-                start.octave(),
-                end.pitch(),
-                end.octave(),
-            );
+            let range = format!("{} to {}", start, end,);
 
             let layer_cells: Html = kg
                 .layers
