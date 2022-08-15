@@ -2,13 +2,13 @@ use pomsky_macro::pomsky;
 use regex::Regex;
 use staff::midi::MidiNote;
 use staff::Note;
-use staff::{midi::Octave, note::Accidental, Natural, Pitch};
+use staff::{midi::Octave, Natural, Pitch};
 
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
 /// A sample file with a root note.
-#[derive(PartialEq, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct SampleFile {
     /// Sample file (.wav)
     pub file: String,

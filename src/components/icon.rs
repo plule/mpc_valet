@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-#[derive(Clone, Properties, PartialEq)]
+#[derive(Clone, Properties, PartialEq, Eq)]
 pub struct Props {
     #[prop_or("icon".to_string())]
     pub class: String,

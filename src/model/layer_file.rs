@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::SampleFile;
 
 /// A sample file with a root note, assigned to a layer
-#[derive(PartialEq, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct LayerFile {
     /// Sample file (.wav)
     pub file: String,

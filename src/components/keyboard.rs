@@ -3,7 +3,7 @@ use itertools::Itertools;
 use staff::{midi::MidiNote, Pitch};
 use yew::prelude::*;
 
-#[derive(Properties, PartialEq)]
+#[derive(Properties, PartialEq, Eq)]
 pub struct Props {
     #[prop_or_default]
     pub keygroups: Vec<Keygroup>,

@@ -10,7 +10,7 @@ use super::{Keygroup, Layer, LayerFile, LayerVelocityMode};
 /// A keygroup program is an instrument based on samples.
 ///
 /// It's split into multiple note range, each one in a Keygroup.
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KeygroupProgram {
     /// Name of the keygroup program.
     pub name: String,
