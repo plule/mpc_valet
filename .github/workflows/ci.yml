@@ -61,6 +61,22 @@ jobs:
     - name: Run clippy
       run: cargo clippy
 
+  dependabot:
+    name: 'Dependabot automerge'
+    needs:
+      - build
+      - test
+      - style
+    permissions:
+      pull-requests: write
+      contents: write
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'}} # Detect that the PR author is dependabot
+    steps:
+      - uses: fastify/github-action-merge-dependabot@v3.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
   release:
     needs:
       - build
