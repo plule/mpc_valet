@@ -371,27 +371,27 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pomsky"
-version = "0.8.1"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4985a8359d3fadd6972e48248f518a5f6aecfbe835b82d4d687bac9ea7b749f"
+checksum = "0fac47a8ae929b40981ff7310dc730c8faca0f4c00a9d7c423c298a394f54a88"
 dependencies = [
  "pomsky-syntax",
 ]
 
 [[package]]
 name = "pomsky-macro"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50b7f4e5c18313a99c69212aa78cf677791010eb817e281a77aa80ab6531ebe1"
+checksum = "2a5518a2a7520cb8b1676d43a77736f6f4653f1d5823138dad43db4f6cf08a0b"
 dependencies = [
  "pomsky",
 ]
 
 [[package]]
 name = "pomsky-syntax"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6646007e13d875dc6d454ef2894432b673e85d1cc405068aa2f82793dc9640ac"
+checksum = "8a106f83db6bdca4a59121f653a4ae87fb718e7c6e29c0d10cf705e9c53a5f0e"
 
 [[package]]
 name = "proc-macro-error"
