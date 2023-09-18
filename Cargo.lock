@@ -42,6 +42,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "concoct"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "439d51412a46e521263b2a335363f8732c92d8bc3bac8f33dab694a4f22d3d77"
+dependencies = [
+ "impl-trait-for-tuples",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "console_error_panic_hook"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -297,6 +308,17 @@ name = "hashbrown"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
+
+[[package]]
+name = "impl-trait-for-tuples"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d7a9f6330b71fea57921c9b61c47ee6e84f72d394754eff6163ae67e7395eb"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.104",
+]
 
 [[package]]
 name = "indexmap"
@@ -596,12 +618,14 @@ checksum = "eb703cfe953bccee95685111adeedb76fabe4e97549a58d16f03ea7b9367bb32"
 
 [[package]]
 name = "staff"
-version = "0.5.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00049b6502bc9e270eb984de0db00a2323a1541d0c24942ff4a18551db25e56e"
+checksum = "e4c886beb82e4d51f5cd2ffb8effdc7ad9415cedc2509dc7a601e31071a5debe"
 dependencies = [
+ "concoct",
+ "console_error_panic_hook",
  "num-traits",
- "thiserror",
+ "serde",
 ]
 
 [[package]]
