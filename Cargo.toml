@@ -21,7 +21,7 @@ yew-utils = "0.2"
 log = "0.4.20"
 wasm-logger = "0.2.0"
 wasm-bindgen = "0.2.88"
-js-sys = "0.3.67"
+js-sys = "0.3.68"
 serde = "1"
 gloo-storage = "0.3"
 
