@@ -37,7 +37,7 @@ features = [
 ]
 
 [dev-dependencies]
-rstest = "0.20.0"
+rstest = "0.21.0"
 
 [profile.release]
 opt-level = 2 # fast and small wasm
